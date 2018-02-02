@@ -1,5 +1,15 @@
 {
   "name": "gistopia",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/taires/taires.github.io.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/taires/taires.github.io/issues"
+  },
+  "homepage": "https://github.com/taires/taires.github.io#readme",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
