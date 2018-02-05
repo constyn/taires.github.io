@@ -17,7 +17,6 @@
     "build": "webpack --config webpack.config.dev.js",
     "dev": "webpack-dev-server --config webpack.config.dev.js --inline --hot --contentBase src"
   },
-  "license": "MIT",
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-loader": "^6.2.6",
@@ -36,5 +35,8 @@
     "webpack": "^3.5.5",
     "webpack-dev-server": "^2.7.1",
     "yargs": "^10.1.1"
+  },
+  "dependencies": {
+    "random-seed": "^0.3.0"
   }
 }

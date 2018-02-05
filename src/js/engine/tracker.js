@@ -7,15 +7,13 @@ export default class Tracker {
   constructor() {
     listeners.push(this)
     numToLoad++;
-    console.log("Incrementing", numToLoad);
   }
 
   done() {
     numToLoad--;
-    console.log("Decrementing", numToLoad);
+    console.log("Loaded", this.constructor.name);
     if (numToLoad === 0) {
       listeners.forEach( inst => {
-        console.log(inst);
         inst.onLoaded();
       })
 

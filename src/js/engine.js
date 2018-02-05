@@ -1,8 +1,7 @@
-import {
-    DEFAULT_TILESET
-} from './constants';
+
 import TileContext from './engine/render/tile.context';
 import Tracker from './engine/tracker';
+import World from './engine/world/world';
 
 export default class Engine extends Tracker {
 
@@ -13,16 +12,19 @@ export default class Engine extends Tracker {
         document.body.append(this.canvas)
         this.canvas.width = document.body.clientWidth;
         this.canvas.height = window.innerHeight;
-        this.defaultTileContext = new TileContext({
-            tileset: DEFAULT_TILESET,
-            cols: 7
-        });
-        this.remoteTileContext = new TileContext({
-            remote: "https://gist.githubusercontent.com/cstefanache/8430e1d19c8bae33d99c6f7205ddd84f/raw/596d92fd3d00c2b5c75df17d7f832a2850fbea66/tilesets.json"
-        });
+
+        // this.remoteTileContext = new TileContext({
+        //     remote: "https://gist.githubusercontent.com/cstefanache/8430e1d19c8bae33d99c6f7205ddd84f/raw/596d92fd3d00c2b5c75df17d7f832a2850fbea66/tilesets.json"
+        // });
+        this.world = new World({width: 32, height: 32})
         this.done();
     }
 
+    onLoaded() {
+      this.world.render(this.ctx);
+    }
+
+    /*
     onLoaded() {
         let size = 34;
         let map = this.generateMap(this.canvas.height / size, this.canvas.width / size);
@@ -109,5 +111,6 @@ export default class Engine extends Tracker {
                  (loc.j < h - 1 && !map[loc.i][loc.j + 1].wall) ||
                  (loc.j > 0 && !map[loc.i][loc.j - 1].wall)
     }
+    */
 
 }
