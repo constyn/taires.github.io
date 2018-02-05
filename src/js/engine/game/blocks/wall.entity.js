@@ -6,7 +6,7 @@ export default class WallBlock extends BasicEntity {
   constructor() {
     super({
       block: true,
-      tile: 11
+      tile: 15
     })
   }
 

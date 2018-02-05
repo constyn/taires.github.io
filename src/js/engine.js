@@ -1,30 +1,49 @@
-
 import TileContext from './engine/render/tile.context';
 import Tracker from './engine/tracker';
+import Tileset from './engine/tilesets';
 import World from './engine/world/world';
 
 export default class Engine extends Tracker {
 
-    constructor() {
-        super();
-        this.canvas = document.createElement('canvas');
-        this.ctx = this.canvas.getContext('2d');
-        document.body.append(this.canvas)
-        this.canvas.width = document.body.clientWidth;
-        this.canvas.height = window.innerHeight;
+  constructor() {
+    super();
+    this.canvas = document.createElement('canvas');
+    this.ctx = this.canvas.getContext('2d');
+    document.body.append(this.canvas)
+    this.canvas.width = document.body.clientWidth;
+    this.canvas.height = window.innerHeight;
 
-        // this.remoteTileContext = new TileContext({
-        //     remote: "https://gist.githubusercontent.com/cstefanache/8430e1d19c8bae33d99c6f7205ddd84f/raw/596d92fd3d00c2b5c75df17d7f832a2850fbea66/tilesets.json"
-        // });
-        this.world = new World({width: 32, height: 32})
-        this.done();
-    }
+    //Tileset.loadRemote('hash', 'https://gist.githubusercontent.com/cstefanache/8430e1d19c8bae33d99c6f7205ddd84f/raw/596d92fd3d00c2b5c75df17d7f832a2850fbea66/tilesets.json');
 
-    onLoaded() {
-      this.world.render(this.ctx);
-    }
+    this.world = new World({width: 320, height: 320})
+    this.done();
+    let x = 10,
+      y = 10;
+    document.addEventListener('keyup', (e) => {
+      switch (e.key) {
+        case 'ArrowRight':
+          x = Math.min(320, x + 1);
+          break;
+        case 'ArrowLeft':
+          x = Math.max(0, x - 1);
+          break;
+        case 'ArrowUp':
+          y = Math.min(320, y + 1);
+          break;
+        case 'ArrowLeft':
+          y = Math.max(0, y - 1);
+          break;
+      }
 
-    /*
+      this.world.render(this.ctx, x, y);
+    })
+  }
+
+  onLoaded() {
+    this.world.render(this.ctx, 0, 0);
+  }
+
+  /*
     onLoaded() {
         let size = 34;
         let map = this.generateMap(this.canvas.height / size, this.canvas.width / size);
