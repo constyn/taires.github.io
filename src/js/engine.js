@@ -13,6 +13,7 @@ export default class Engine extends Tracker {
     this.canvas.width = document.body.clientWidth;
     this.canvas.height = window.innerHeight;
 
+
     //Tileset.loadRemote('hash', 'https://gist.githubusercontent.com/cstefanache/8430e1d19c8bae33d99c6f7205ddd84f/raw/596d92fd3d00c2b5c75df17d7f832a2850fbea66/tilesets.json');
 
     this.world = new World({width: 320, height: 320})
