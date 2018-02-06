@@ -228,6 +228,8 @@ function drawImage () {
 
 
 
+const PADDING = 20;
+
 let Engine = class Engine extends __WEBPACK_IMPORTED_MODULE_1__engine_tracker__["a" /* default */] {
 
     constructor() {
@@ -235,15 +237,18 @@ let Engine = class Engine extends __WEBPACK_IMPORTED_MODULE_1__engine_tracker__[
         this.canvas = document.createElement('canvas');
         this.ctx = this.canvas.getContext('2d');
         document.body.append(this.canvas);
-        this.canvas.width = document.body.clientWidth;
-        this.canvas.height = window.innerHeight;
+        this.canvas.width = document.body.clientWidth - PADDING;
+        this.canvas.height = window.innerHeight - PADDING;
+
+        document.body.style = 'background-color: #808080; text-align: center;';
+        this.canvas.style = 'margin: 0 auto; border: 1px solid #000;';
 
         //Tileset.loadRemote('hash', 'https://gist.githubusercontent.com/cstefanache/8430e1d19c8bae33d99c6f7205ddd84f/raw/596d92fd3d00c2b5c75df17d7f832a2850fbea66/tilesets.json');
 
         this.world = new __WEBPACK_IMPORTED_MODULE_3__engine_world_world__["a" /* default */]({ width: 320, height: 320 });
         this.done();
-        let x = 10,
-            y = 10;
+        let x = 0,
+            y = 0;
         document.addEventListener('keyup', e => {
             switch (e.key) {
                 case 'ArrowRight':
@@ -252,10 +257,10 @@ let Engine = class Engine extends __WEBPACK_IMPORTED_MODULE_1__engine_tracker__[
                 case 'ArrowLeft':
                     x = Math.max(0, x - 1);
                     break;
-                case 'ArrowUp':
+                case 'ArrowDown':
                     y = Math.min(320, y + 1);
                     break;
-                case 'ArrowLeft':
+                case 'ArrowUp':
                     y = Math.max(0, y - 1);
                     break;
             }
@@ -387,6 +392,7 @@ let World = class World extends __WEBPACK_IMPORTED_MODULE_0__tracker__["a" /* de
 
   constructor(options) {
     super();
+
     //this.done();
 
     let width = options.width,
@@ -429,13 +435,17 @@ let World = class World extends __WEBPACK_IMPORTED_MODULE_0__tracker__["a" /* de
   }
 
   render(ctx, x, y) {
-    ctx.clearRect(0, 0, 600, 600);
+
+    let width = document.body.clientWidth;
+    let height = window.innerHeight;
+
+    ctx.clearRect(0, 0, width, height);
     for (let l = 0; l < MAX_HEIGHT; l++) {
       let layer = this.world[l];
-      for (let i = 0; i < 16; i++) {
-        let row = layer[i + x];
-        for (let j = 0; j < 16; j++) {
-          let obj = row[j + y];
+      for (let i = 0; i < height / 32; i++) {
+        let row = layer[i + y];
+        for (let j = 0; j < width / 32; j++) {
+          let obj = row[j + x];
           if (obj) {
             obj.render(ctx, i, j);
           }

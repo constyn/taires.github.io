@@ -5,6 +5,9 @@ export default class World extends Tracker {
 
   constructor(options) {
     super();
+
+
+
     //this.done();
 
     let {width, height} = options,
@@ -48,13 +51,18 @@ export default class World extends Tracker {
   }
 
   render(ctx, x, y) {
-    ctx.clearRect(0,0, 600,600)
+
+    let width = document.body.clientWidth;
+    let height = window.innerHeight;
+
+
+    ctx.clearRect(0,0, width,height)
     for (let l = 0; l < MAX_HEIGHT; l++) {
       let layer = this.world[l];
-      for (let i = 0; i < 16; i++) {
-        let row = layer[i + x];
-        for (let j = 0; j < 16; j++) {
-          let obj = row[j + y];
+      for (let i = 0; i < height / 32; i++) {
+        let row = layer[i + y];
+        for (let j = 0; j < width / 32; j++) {
+          let obj = row[j + x];
           if (obj) {
             obj.render(ctx, i, j)
           }

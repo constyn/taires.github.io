@@ -3,6 +3,8 @@ import Tracker from './engine/tracker';
 import Tileset from './engine/tilesets';
 import World from './engine/world/world';
 
+const PADDING = 20;
+
 export default class Engine extends Tracker {
 
   constructor() {
@@ -10,16 +12,20 @@ export default class Engine extends Tracker {
     this.canvas = document.createElement('canvas');
     this.ctx = this.canvas.getContext('2d');
     document.body.append(this.canvas)
-    this.canvas.width = document.body.clientWidth;
-    this.canvas.height = window.innerHeight;
+    this.canvas.width = document.body.clientWidth - PADDING;
+    this.canvas.height = window.innerHeight - PADDING;
 
+
+
+    document.body.style = 'background-color: #808080; text-align: center;'
+    this.canvas.style = 'margin: 0 auto; border: 1px solid #000;'
 
     //Tileset.loadRemote('hash', 'https://gist.githubusercontent.com/cstefanache/8430e1d19c8bae33d99c6f7205ddd84f/raw/596d92fd3d00c2b5c75df17d7f832a2850fbea66/tilesets.json');
 
     this.world = new World({width: 320, height: 320})
     this.done();
-    let x = 10,
-      y = 10;
+    let x = 0,
+      y = 0;
     document.addEventListener('keyup', (e) => {
       switch (e.key) {
         case 'ArrowRight':
@@ -28,10 +34,10 @@ export default class Engine extends Tracker {
         case 'ArrowLeft':
           x = Math.max(0, x - 1);
           break;
-        case 'ArrowUp':
+        case 'ArrowDown':
           y = Math.min(320, y + 1);
           break;
-        case 'ArrowLeft':
+        case 'ArrowUp':
           y = Math.max(0, y - 1);
           break;
       }
