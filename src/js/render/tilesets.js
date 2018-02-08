@@ -1,5 +1,5 @@
-import {DEFAULT_TILESET} from '../constants';
-import TileContext from './render/tile.context';
+import {DEFAULT_TILESET} from '../defaults/tilesets';
+import TileContext from './tile.context';
 
 class Tilesets {
 

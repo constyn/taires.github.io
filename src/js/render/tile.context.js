@@ -1,9 +1,9 @@
-import Tracker from '../tracker';
+import AsyncOperation from '../core/async';
 import loader from '../ajax/ajax.loader';
 
 const TILE_SIZE = 32;
 
-export default class TileContext extends Tracker {
+export default class TileContext extends AsyncOperation {
 
   constructor(options) {
     super();
@@ -19,7 +19,6 @@ export default class TileContext extends Tracker {
     } else {
       throw new Error("Please provide (remote || tileset, colLength) as options for TileContext");
     }
-
 
   }
 
