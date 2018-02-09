@@ -1,8 +1,8 @@
 import World from './world';
 
 const DEFAULTS = {
-  width: 100,
-  height: 100
+  width: 60,
+  height: 60
 }
 
 export default class Game {

@@ -1,7 +1,13 @@
-export default class StaticEntity extends BasicEntity {
+import BasicEntity from '../entity';
 
-  constructor(renderingContext) {
-    super(renderingContext)
+export default class CreatureEntity extends BasicEntity {
+
+  constructor(properties) {
+    super({
+      ...properties,
+      tile: 1,
+      block: true
+    })
   }
 
 }

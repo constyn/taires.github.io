@@ -24,8 +24,8 @@ export default class Entity {
     return this.props.tile;
   }
 
-  render(ctx, x, y, neighbours) {
-    Tileset.getContext(this.props.tileset).renderTile(ctx, x, y, this.getTile.call(this))
+  render(ctx, x, y, neigh) {
+    Tileset.getContext(this.props.tileset).renderTile(ctx, x, y, this.getTile.call(this, neigh))
   }
 
 }
