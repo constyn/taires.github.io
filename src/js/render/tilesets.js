@@ -5,7 +5,7 @@ class Tilesets {
 
   constructor() {
     this.tilesets = {};
-    this.registerContext('default', new TileContext({tileset: DEFAULT_TILESET, cols: 7}));
+    this.registerContext('default', new TileContext({tileset: DEFAULT_TILESET, cols: 32}));
   }
 
   loadRemote(hash, remote) {

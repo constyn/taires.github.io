@@ -1,5 +1,6 @@
 import Async from '../core/async';
 import Items from './items';
+import {TILE_SIZE} from '../defaults/tilesets';
 
 export default class World extends Async {
 
@@ -25,11 +26,11 @@ export default class World extends Async {
       }
       this.biomes.push(row);
     }
+    this.spawnBiome(0, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random())
     this.spawnBiome(1, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random())
     this.spawnBiome(2, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random())
     this.spawnBiome(3, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random())
     this.spawnBiome(4, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random())
-    this.spawnBiome(5, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random())
 
     this.layers.push(this.buildGround());
     this.layers.push(this.buildBlocks());
@@ -61,9 +62,7 @@ export default class World extends Async {
       for (let w = 0; w < this.width; w++) {
         row.push(Items.getItem('ground', {biome: this.biomes[w][h]
         }, {
-          getTile: (inst) => {
-            return inst.props.biome
-          }
+
         }))
       }
       groundLayer.push(row);
@@ -79,6 +78,10 @@ export default class World extends Async {
       for (let w = 0; w < this.width; w++) {
         if (Math.random() < .1) {
           row.push(Items.getItem('block', {biome: this.biomes[w][h]
+          }, {
+            getTile: (inst) => {
+              return (inst.props.biome * 32 * 3) + 16
+            }
           }))
         } else {
           row.push(undefined)
@@ -92,8 +95,8 @@ export default class World extends Async {
 
   renderBiomes(ctx, x, y) {
 
-    let scWidth = document.body.clientWidth / 32;
-    let scHeight = window.innerHeight / 32;
+    let scWidth = document.body.clientWidth / TILE_SIZE;
+    let scHeight = window.innerHeight / TILE_SIZE;
 
     for (let h = 0; h < this.height; h++) {
       for (let w = 0; w < this.width; w++) {
@@ -120,9 +123,9 @@ export default class World extends Async {
     ctx.clearRect(0, 0, scWidth, scHeight)
     for (let l = 0; l < this.layers.length; l++) {
       let layer = layers[l];
-      for (let i = 0; i < scHeight / 32; i++) {
+      for (let i = 0; i < scHeight / TILE_SIZE; i++) {
         let row = layer[i + y];
-        for (let j = 0; j < scWidth / 32; j++) {
+        for (let j = 0; j < scWidth / TILE_SIZE; j++) {
           let obj = row[j + x];
           if (obj) {
             obj.render(ctx, i, j)

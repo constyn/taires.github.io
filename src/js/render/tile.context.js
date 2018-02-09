@@ -1,7 +1,7 @@
 import AsyncOperation from '../core/async';
 import loader from '../ajax/ajax.loader';
+import {TILE_SIZE} from '../defaults/tilesets';
 
-const TILE_SIZE = 32;
 
 export default class TileContext extends AsyncOperation {
 
