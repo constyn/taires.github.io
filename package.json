@@ -24,6 +24,7 @@
     "babel-plugin-transform-object-rest-spread": "^6.23.0",
     "babel-preset-es2015-native-modules": "^6.9.4",
     "babel-register": "^6.18.0",
+    "base64-img": "^1.0.3",
     "bundle-loader": "^0.5.5",
     "css-loader": "^0.28.7",
     "file-loader": "^0.11.2",
