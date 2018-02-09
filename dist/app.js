@@ -52,8 +52,21 @@ let Entity = class Entity {
     this.props = _extends({}, __WEBPACK_IMPORTED_MODULE_0__defaults__["a" /* BASIC */], properties);
   }
 
+  init(overrides) {
+    Object.keys(overrides).forEach(key => {
+      let ref = overrides[key];
+      this[key] = () => {
+        return ref(this);
+      };
+    });
+  }
+
+  getTile() {
+    return this.props.tile;
+  }
+
   render(ctx, x, y, neighbours) {
-    __WEBPACK_IMPORTED_MODULE_1__render_tilesets__["a" /* default */].getContext(this.props.tileset).renderTile(ctx, x, y, this.props.tile);
+    __WEBPACK_IMPORTED_MODULE_1__render_tilesets__["a" /* default */].getContext(this.props.tileset).renderTile(ctx, x, y, this.getTile.call(this));
   }
 
 };
@@ -406,6 +419,11 @@ let Engine = class Engine extends __WEBPACK_IMPORTED_MODULE_0__core_async__["a" 
   constructor() {
     super();
     this.prepareDOM();
+
+    let game = new __WEBPACK_IMPORTED_MODULE_1__game_game__["a" /* default */]();
+    game.initialize({}, this.ctx);
+    game.render(this.ctx);
+
     this.done();
   }
 
@@ -418,10 +436,6 @@ let Engine = class Engine extends __WEBPACK_IMPORTED_MODULE_0__core_async__["a" 
 
     document.body.style = 'background-color: #808080; text-align: center;';
     this.canvas.style = 'margin: 0 auto; border: 1px solid #000;';
-
-    let game = new __WEBPACK_IMPORTED_MODULE_1__game_game__["a" /* default */]();
-    game.initialize({}, this.ctx);
-    game.render();
   }
 
 };
@@ -522,6 +536,7 @@ let World = class World extends __WEBPACK_IMPORTED_MODULE_0__core_async__["a" /*
     this.spawnBiome(5, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random());
 
     this.layers.push(this.buildGround());
+    this.layers.push(this.buildBlocks());
     this.done();
   }
 
@@ -548,6 +563,10 @@ let World = class World extends __WEBPACK_IMPORTED_MODULE_0__core_async__["a" /*
       let row = [];
       for (let w = 0; w < this.width; w++) {
         row.push(__WEBPACK_IMPORTED_MODULE_1__items__["a" /* default */].getItem('ground', { biome: this.biomes[w][h]
+        }, {
+          getTile: inst => {
+            return inst.props.biome;
+          }
         }));
       }
       groundLayer.push(row);
@@ -556,7 +575,28 @@ let World = class World extends __WEBPACK_IMPORTED_MODULE_0__core_async__["a" /*
     return groundLayer;
   }
 
+  buildBlocks() {
+    let blocksLayer = [];
+    for (let h = 0; h < this.height; h++) {
+      let row = [];
+      for (let w = 0; w < this.width; w++) {
+        if (Math.random() < .1) {
+          row.push(__WEBPACK_IMPORTED_MODULE_1__items__["a" /* default */].getItem('block', { biome: this.biomes[w][h]
+          }));
+        } else {
+          row.push(undefined);
+        }
+      }
+      blocksLayer.push(row);
+    }
+
+    return blocksLayer;
+  }
+
   renderBiomes(ctx, x, y) {
+
+    let scWidth = document.body.clientWidth / 32;
+    let scHeight = window.innerHeight / 32;
 
     for (let h = 0; h < this.height; h++) {
       for (let w = 0; w < this.width; w++) {
@@ -565,32 +605,34 @@ let World = class World extends __WEBPACK_IMPORTED_MODULE_0__core_async__["a" /*
         ctx.fillRect(w, h, 1, 1);
       }
     }
+
+    //ctx.rect(x, y, scWidth, scHeight); ctx.stroke();
   }
 
   render(ctx, x, y) {
     let width = this.width,
         height = this.height,
-        layers = this.layers,
-        layer = layers[0];
+        layers = this.layers;
 
 
     let scWidth = document.body.clientWidth;
     let scHeight = window.innerHeight;
 
-    if (!ctx) return;
-
     ctx.clearRect(0, 0, scWidth, scHeight);
-    for (let i = 0; i < scHeight / 32; i++) {
-      let row = layer[i + y];
-      for (let j = 0; j < scWidth / 32; j++) {
-        let obj = row[j + x];
-        if (obj) {
-          obj.render(ctx, i, j);
+    for (let l = 0; l < this.layers.length; l++) {
+      let layer = layers[l];
+      for (let i = 0; i < scHeight / 32; i++) {
+        let row = layer[i + y];
+        for (let j = 0; j < scWidth / 32; j++) {
+          let obj = row[j + x];
+          if (obj) {
+            obj.render(ctx, i, j);
+          }
         }
       }
     }
 
-    this.renderBiomes(ctx);
+    this.renderBiomes(ctx, x, y);
   }
 
 };
@@ -608,22 +650,27 @@ let World = class World extends __WEBPACK_IMPORTED_MODULE_0__core_async__["a" /*
 
 
 const keys = {
-  'ground': [__WEBPACK_IMPORTED_MODULE_0__blocks_ground_entity__["a" /* default */]]
+  'ground': [__WEBPACK_IMPORTED_MODULE_0__blocks_ground_entity__["a" /* default */]],
+  'block': [__WEBPACK_IMPORTED_MODULE_1__blocks_wall_entity__["a" /* default */]]
 };
 
 let Items = class Items {
 
-  static getItem(type, props) {
+  static getItem(type, props, overrides) {
     let list = keys[type];
-
     if (!list) {
       throw new Error(`Unable to find item for type ${type}`);
     }
 
     const rand = Math.floor(Math.random() * list.length),
-          klass = list[rand];
+          klass = list[rand],
+          instance = new klass(props);
 
-    return new klass(props);
+    if (overrides) {
+      instance.init(overrides);
+    }
+
+    return instance;
   }
 
 };
@@ -644,7 +691,7 @@ let GroundBlock = class GroundBlock extends __WEBPACK_IMPORTED_MODULE_0__entity_
 
   constructor(properties) {
     super(_extends({}, properties, {
-      tile: properties ? properties.biome : 1,
+      tile: 1,
       name: 'ground',
       block: true
     }));
@@ -787,7 +834,7 @@ let loader = class loader {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* unused harmony export default */
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return WallBlock; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__entity__ = __webpack_require__(1);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
@@ -800,6 +847,10 @@ let WallBlock = class WallBlock extends __WEBPACK_IMPORTED_MODULE_0__entity__["a
       block: true,
       tile: 15
     }, props));
+  }
+
+  getTile() {
+    return 7 + this.props.biome;
   }
 
 };

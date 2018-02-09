@@ -12,10 +12,19 @@
 
   <body>
     <div id="app"></div>
-    <script type="text/javascript"
+    <!-- <script type="text/javascript"
             src="dist/common.bundle.js"></script>
     <script type="text/javascript"
-            src="dist/app.js"></script>
+            src="dist/app.js"></script> -->
+    <script>
+      function addScript(src) {
+        var s = document.createElement('script');
+        s.setAttribute('src', src + new Date().getTime());
+        document.body.appendChild(s);
+      }
+      addScript("dist/common.bundle.js")
+      addScript("dist/app.js")
+    </script>
   </body>
 
 </html>

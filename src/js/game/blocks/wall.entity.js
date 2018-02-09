@@ -11,4 +11,8 @@ export default class WallBlock extends Entity {
     })
   }
 
+  getTile() {
+    return 7 + this.props.biome;
+  }
+
 }
