@@ -32,22 +32,20 @@ export default class World extends Async {
       this.biomes.push(row);
     }
     this.spawnBiome(0, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random())
-    //this.spawnBiome(1, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random())
-    //this.spawnBiome(2, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random())
-    //this.spawnBiome(3, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random())
-    //this.spawnBiome(4, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random())
+    // this.spawnBiome(1, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random()) this.spawnBiome(2, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random()) this.spawnBiome(3,
+    // Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random()) this.spawnBiome(4, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random())
 
+    let x = Math.round(Math.random() * width),
+      y = Math.round(Math.random() * height);
 
-    this.renderHill(3, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random());
-    this.renderHill(4, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random());
-    // this.renderHill(3, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random());
-    // this.renderHill(4, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random());
-
+    this.renderHill(3, x, y, .2);
+    this.renderHill(4, x, y, .1);
+    this.renderHill(5, x, y, .05);
+    // this.renderHill(3, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random()); this.renderHill(4, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random());
 
     for (var i = 0; i < MAX_HEIGHT; i++) {
       this.layers.push(this.buildGround(i));
     }
-
 
     //this.layers.push(this.buildBlocks());
     this.done();
@@ -71,20 +69,10 @@ export default class World extends Async {
     }
   }
 
-  // normalizeHeights() {
-  //   let normalized = [];
-  //   for (let i = 0; i < this.height; i++) {
-  //     let row = [];
-  //     for (let j = 0; j < this.width; j++) {
-  //       row.push(Math.ceil(getNeightbours(this.heights, j, i).reduce((memo, item) => {
-  //         return (memo + item) / 2;
-  //       }, 1)));
-  //     }
-  //     normalized.push(row);
-  //   }
+  // normalizeHeights() {   let normalized = [];   for (let i = 0; i < this.height; i++) {     let row = [];     for (let j = 0; j < this.width; j++) {       row.push(Math.ceil(getNeightbours(this.heights, j, i).reduce((memo, item) => {
+  // return (memo + item) / 2;       }, 1)));     }     normalized.push(row);   }
   //
-  //   this.heights = normalized;
-  // }
+  //   this.heights = normalized; }
 
   spawnBiome(num, startX, startY, strength) {
     if (startX < 0 || startX > this.width - 1 || startY < 0 || startY > this.height - 1)
@@ -182,7 +170,9 @@ export default class World extends Async {
           for (let j = 0; j < Math.min(scWidth / TILE_SIZE, row.length); j++) {
             let obj = row[j + x];
             if (obj) {
-              obj.render(ctx, j, i, getNeightbours(layer, j + x, i + y, true))
+              obj.render(ctx, j, i, {
+                neigh: getNeightbours(layer, j + x, i + y, true)
+              })
             }
           }
         }

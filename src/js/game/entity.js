@@ -20,12 +20,15 @@ export default class Entity {
 
   }
 
-  getTile() {
+  getTile(neigh) {
     return this.props.tile;
   }
 
-  render(ctx, x, y, neigh) {
-    Tileset.getContext(this.props.tileset).renderTile(ctx, x, y, this.getTile.call(this, neigh))
+  render(ctx, x, y, opt) {
+    let {tile, neigh} = opt,
+      tileToRender = tile || this.getTile.call(this, neigh);
+
+    Tileset.getContext(this.props.tileset).renderTile(ctx, x, y, tileToRender)
   }
 
 }
