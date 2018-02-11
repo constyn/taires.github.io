@@ -20,40 +20,24 @@ export default class World extends Async {
 
     this.layers = [];
 
-    for (let h = 0; h < height; h++) {
-      let row = [];
-      for (let w = 0; w < width; w++) {
-        row.push(
-          Math.random() > 0
-            ? 0
-            : 1
-        )
-      }
-      this.biomes.push(row);
-    }
+    this.biomes = initializeMatrix(width, height, 2);
 
-    for (let i = 0; i < 6; i++) {
-      this.spawnBiome(i, Math.round(Math.random() * width), Math.round(Math.random() * height), .4)
+    for (let i = 1; i < 6; i++) {
+      this.spawnBiome(i, Math.round(Math.random() * width), Math.round(Math.random() * height), .2 + Math.random() * .8)
     }
     // this.spawnBiome(1, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random()) this.spawnBiome(2, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random()) this.spawnBiome(3,
     // Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random()) this.spawnBiome(4, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random())
-
 
     for (let i = 0; i < 5; i++) {
       let x = Math.round(Math.random() * width),
         y = Math.round(Math.random() * height),
         hh = 3 + Math.round(Math.random() * 4);
-      // let start = .4
-      // for (let j = 3; j < hh; j++) {
-      //   this.renderHill(j, x, y, start);
-      //   start /= 2;
-      // }
+      // let start = .4 for (let j = 3; j < hh; j++) {   this.renderHill(j, x, y, start);   start /= 2; }
 
       this.renderHill(3, x, y, .5);
       this.renderHill(4, x, y, .2);
       this.renderHill(5, x, y, .05);
     }
-
 
     for (var i = 0; i < MAX_HEIGHT; i++) {
       this.layers.push(this.buildGround(i));
@@ -67,13 +51,13 @@ export default class World extends Async {
     if (startX < 0 || startX > this.width - 1 || startY < 0 || startY > this.height - 1)
       return;
 
-    let nextStrength = strength - (Math.random() * .04);
+    let nextStrength = strength - (Math.random() * 0.03);
     if (nextStrength > 0 && this.heights[startY][startX] !== height) {
       this.heights[startY][startX] = height;
 
       for (let xof of[-1, 0, 1]) {
         for (let yof of[-1, 0, 1]) {
-          if (xof !== 0 || yof !== 0 && Math.random() < strength) {
+          if (xof !== 0 || yof !== 0) {
             this.renderHill(height, startX + xof, startY + yof, nextStrength)
           }
         }

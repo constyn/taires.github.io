@@ -554,30 +554,19 @@ let World = class World extends __WEBPACK_IMPORTED_MODULE_0__core_async__["a" /*
 
     this.layers = [];
 
-    for (let h = 0; h < height; h++) {
-      let row = [];
-      for (let w = 0; w < width; w++) {
-        row.push(Math.random() > 0 ? 0 : 1);
-      }
-      this.biomes.push(row);
-    }
+    this.biomes = Object(__WEBPACK_IMPORTED_MODULE_3__core_utils__["b" /* initializeMatrix */])(width, height, 2);
 
-    for (let i = 0; i < 6; i++) {
-      this.spawnBiome(i, Math.round(Math.random() * width), Math.round(Math.random() * height), .4);
+    for (let i = 1; i < 6; i++) {
+      this.spawnBiome(i, Math.round(Math.random() * width), Math.round(Math.random() * height), .2 + Math.random() * .8);
     }
     // this.spawnBiome(1, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random()) this.spawnBiome(2, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random()) this.spawnBiome(3,
     // Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random()) this.spawnBiome(4, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random())
-
 
     for (let i = 0; i < 5; i++) {
       let x = Math.round(Math.random() * width),
           y = Math.round(Math.random() * height),
           hh = 3 + Math.round(Math.random() * 4);
-      // let start = .4
-      // for (let j = 3; j < hh; j++) {
-      //   this.renderHill(j, x, y, start);
-      //   start /= 2;
-      // }
+      // let start = .4 for (let j = 3; j < hh; j++) {   this.renderHill(j, x, y, start);   start /= 2; }
 
       this.renderHill(3, x, y, .5);
       this.renderHill(4, x, y, .2);
@@ -595,13 +584,13 @@ let World = class World extends __WEBPACK_IMPORTED_MODULE_0__core_async__["a" /*
   renderHill(height, startX, startY, strength) {
     if (startX < 0 || startX > this.width - 1 || startY < 0 || startY > this.height - 1) return;
 
-    let nextStrength = strength - Math.random() * .04;
+    let nextStrength = strength - Math.random() * 0.03;
     if (nextStrength > 0 && this.heights[startY][startX] !== height) {
       this.heights[startY][startX] = height;
 
       for (let xof of [-1, 0, 1]) {
         for (let yof of [-1, 0, 1]) {
-          if (xof !== 0 || yof !== 0 && Math.random() < strength) {
+          if (xof !== 0 || yof !== 0) {
             this.renderHill(height, startX + xof, startY + yof, nextStrength);
           }
         }
@@ -977,15 +966,28 @@ let TileContext = class TileContext extends __WEBPACK_IMPORTED_MODULE_0__core_as
     highlightColor.data[1] += 15;
     highlightColor.data[2] += 15;
 
-    darkSlopeColor.data[0] -= 15;
-    darkSlopeColor.data[1] -= 15;
-    darkSlopeColor.data[2] -= 15;
+    darkSlopeColor.data[0] -= 10;
+    darkSlopeColor.data[1] -= 10;
+    darkSlopeColor.data[2] -= 10;
 
     ctx.fillStyle = `rgb(${color.data[0]}, ${color.data[1]}, ${color.data[2]})`;
     ctx.fillRect(startX, startY, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 4, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */]);
     ctx.fillRect(startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 7, startY, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 12, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 3);
     ctx.fillStyle = `rgb(${slopeColor.data[0]}, ${slopeColor.data[1]}, ${slopeColor.data[2]})`;
     ctx.fillRect(startX, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 4, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */]);
+
+    function put2xPixel(color, x, y, probability = 1) {
+      if (probability === 1 || Math.random() < probability) {
+        ctx.putImageData(color, x, y);
+        ctx.putImageData(color, x + 1, y);
+        ctx.putImageData(color, x, y + 1);
+        ctx.putImageData(color, x + 1, y + 1);
+      }
+    }
+
+    for (let x = 0; x < __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 4; x += 2) {
+      put2xPixel(color, x, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 2 - 2, .8);
+    }
 
     function noise(col, sx, sy, probability) {
       for (let y = 0; y < __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */]; y += 2) {
@@ -999,14 +1001,16 @@ let TileContext = class TileContext extends __WEBPACK_IMPORTED_MODULE_0__core_as
         }
       }
     }
-    /*
-    noise(highlightColor, startX + TILE_SIZE, startY, .01);
-    noise(highlightColor, startX + TILE_SIZE * 2, startY, .05);
-    noise(highlightColor, startX + TILE_SIZE * 3, startY, .1);
-     noise(darkSlopeColor, startX + TILE_SIZE , startY + TILE_SIZE, .01);
-    noise(darkSlopeColor, startX + TILE_SIZE * 2, startY + TILE_SIZE, .05);
-    noise(darkSlopeColor, startX + TILE_SIZE * 3, startY + TILE_SIZE, .1);
-    */
+
+    noise(highlightColor, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], startY, .01);
+    noise(highlightColor, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 2, startY, .02);
+    noise(highlightColor, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 3, startY, .03);
+
+    noise(darkSlopeColor, startX, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], .05);
+    noise(darkSlopeColor, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], .1);
+    noise(darkSlopeColor, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 2, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], .2);
+    noise(darkSlopeColor, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 3, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], .3);
+
     function renderWithProbability(what, x, y, probability, xor) {
       if (Math.random() < probability) {
         ctx.putImageData(what, x, y);
@@ -1022,12 +1026,12 @@ let TileContext = class TileContext extends __WEBPACK_IMPORTED_MODULE_0__core_as
 
       for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */]; i += 2) {
 
-        n ? renderWithProbability(color, x + i, y, 1, true) && renderWithProbability(bgCol, x + i, y + 1, 0) && renderWithProbability(color, x + i, y, 0) : undefined;
-        s ? renderWithProbability(color, x + i, y + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 2, 1, true) && renderWithProbability(bgCol, x + i, y + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 2, 0) && renderWithProbability(color, x + i, y + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 4, 0) : undefined;
+        n ? renderWithProbability(bgCol, x + i, y, .8, true) && renderWithProbability(bgCol, x + i, y + 1, .4, true) && renderWithProbability(color, x + i, y, .1) : undefined;
+        s ? renderWithProbability(color, x + i, y + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 2, .8, true) && renderWithProbability(color, x + i, y + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 4, .4, true) && renderWithProbability(color, x + i, y + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 4, 0) : undefined;
 
-        e ? renderWithProbability(color, x + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 2, y + i, 1, true) && renderWithProbability(bgCol, x + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 4, y + i, 0) && renderWithProbability(color, x + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 4, y + i, 0) : undefined;
+        e ? renderWithProbability(color, x + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 2, y + i, .8, true) && renderWithProbability(color, x + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 4, y + i, .6) : undefined;
 
-        w ? renderWithProbability(color, x, y + i, 1, true) && renderWithProbability(bgCol, x + 2, y + i, 0) && renderWithProbability(color, x + 2, y + i, 0) : undefined;
+        w ? renderWithProbability(bgCol, x, y + i, .8, true) && renderWithProbability(bgCol, x + 2, y + i, .6) : undefined;
       }
 
       /*

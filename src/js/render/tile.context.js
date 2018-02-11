@@ -54,15 +54,28 @@ export default class TileContext extends AsyncOperation {
     highlightColor.data[1] += 15;
     highlightColor.data[2] += 15;
 
-    darkSlopeColor.data[0] -= 15;
-    darkSlopeColor.data[1] -= 15;
-    darkSlopeColor.data[2] -= 15;
+    darkSlopeColor.data[0] -= 10;
+    darkSlopeColor.data[1] -= 10;
+    darkSlopeColor.data[2] -= 10;
 
     ctx.fillStyle = `rgb(${color.data[0]}, ${color.data[1]}, ${color.data[2]})`;
     ctx.fillRect(startX, startY, TILE_SIZE * 4, TILE_SIZE)
     ctx.fillRect(startX + TILE_SIZE * 7, startY, startX + TILE_SIZE * 12, startY + TILE_SIZE * 3);
     ctx.fillStyle = `rgb(${slopeColor.data[0]}, ${slopeColor.data[1]}, ${slopeColor.data[2]})`;
     ctx.fillRect(startX, startY + TILE_SIZE, TILE_SIZE * 4, TILE_SIZE)
+
+    function put2xPixel(color, x, y, probability = 1) {
+      if (probability === 1 || Math.random() < probability) {
+        ctx.putImageData(color, x, y);
+        ctx.putImageData(color, x + 1, y);
+        ctx.putImageData(color, x, y + 1);
+        ctx.putImageData(color, x + 1, y + 1);
+      }
+    }
+
+    for (let x = 0; x < TILE_SIZE * 4; x += 2) {
+      put2xPixel(color, x, startY + TILE_SIZE * 2 - 2, .8)
+    }
 
     function noise(col, sx, sy, probability) {
       for (let y = 0; y < TILE_SIZE; y += 2) {
@@ -76,15 +89,16 @@ export default class TileContext extends AsyncOperation {
         }
       }
     }
-    /*
-    noise(highlightColor, startX + TILE_SIZE, startY, .01);
-    noise(highlightColor, startX + TILE_SIZE * 2, startY, .05);
-    noise(highlightColor, startX + TILE_SIZE * 3, startY, .1);
 
-    noise(darkSlopeColor, startX + TILE_SIZE , startY + TILE_SIZE, .01);
-    noise(darkSlopeColor, startX + TILE_SIZE * 2, startY + TILE_SIZE, .05);
-    noise(darkSlopeColor, startX + TILE_SIZE * 3, startY + TILE_SIZE, .1);
-*/
+    noise(highlightColor, startX + TILE_SIZE, startY, .01);
+    noise(highlightColor, startX + TILE_SIZE * 2, startY, .02);
+    noise(highlightColor, startX + TILE_SIZE * 3, startY, .03);
+
+    noise(darkSlopeColor, startX, startY + TILE_SIZE, .05);
+    noise(darkSlopeColor, startX + TILE_SIZE, startY + TILE_SIZE, .1);
+    noise(darkSlopeColor, startX + TILE_SIZE * 2, startY + TILE_SIZE, .2);
+    noise(darkSlopeColor, startX + TILE_SIZE * 3, startY + TILE_SIZE, .3);
+
     function renderWithProbability(what, x, y, probability, xor) {
       if (Math.random() < probability) {
         ctx.putImageData(what, x, y);
@@ -101,26 +115,18 @@ export default class TileContext extends AsyncOperation {
       for (let i = 0; i < TILE_SIZE; i += 2) {
 
         n
-          ? renderWithProbability(color, x + i, y, 1, true) &&
-            renderWithProbability(bgCol, x + i, y + 1, 0) &&
-            renderWithProbability(color, x + i, y, 0)
+          ? renderWithProbability(bgCol, x + i, y, .8, true) && renderWithProbability(bgCol, x + i, y + 1, .4, true) && renderWithProbability(color, x + i, y, .1)
           : undefined;
         s
-          ? renderWithProbability(color, x + i, y + TILE_SIZE - 2, 1, true) &&
-            renderWithProbability(bgCol, x + i, y + TILE_SIZE - 2, 0) &&
-            renderWithProbability(color, x + i, y + TILE_SIZE - 4, 0)
+          ? renderWithProbability(color, x + i, y + TILE_SIZE - 2, .8, true) && renderWithProbability(color, x + i, y + TILE_SIZE - 4, .4, true) && renderWithProbability(color, x + i, y + TILE_SIZE - 4, 0)
           : undefined;
 
         e
-          ? renderWithProbability(color, x + TILE_SIZE - 2, y + i, 1, true) &&
-            renderWithProbability(bgCol, x + TILE_SIZE - 4, y + i, 0) &&
-            renderWithProbability(color, x + TILE_SIZE - 4, y + i, 0)
+          ? renderWithProbability(color, x + TILE_SIZE - 2, y + i, .8, true) && renderWithProbability(color, x + TILE_SIZE - 4, y + i, .6)
           : undefined
 
         w
-          ? renderWithProbability(color, x, y + i, 1, true) &&
-            renderWithProbability(bgCol, x + 2, y + i, 0) &&
-            renderWithProbability(color, x + 2, y + i, 0)
+          ? renderWithProbability(bgCol, x, y + i, .8, true) && renderWithProbability(bgCol, x + 2, y + i, .6)
           : undefined
       }
 

@@ -82,6 +82,8 @@ export default class GroundBlock extends Entity {
         super.render(ctx, x, y, {tile})
       }
 
+
+
       //ctx.fillText(this.props.height, x * 16 + 2, y * 16 + 10);
 
     }
