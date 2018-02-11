@@ -1,8 +1,8 @@
 import World from './world';
 
 const DEFAULTS = {
-  width: 80,
-  height: 80
+  width: 200,
+  height: 200
 }
 
 export default class Game {
@@ -17,21 +17,21 @@ export default class Game {
     this.world = new World(DEFAULTS);
 
     let x = 0,
-      y = 0;
+      y = 0, inc = 10;
 
-    document.addEventListener('keyup', (e) => {
+    document.addEventListener('keydown', (e) => {
       switch (e.key) {
         case 'ArrowRight':
-          x = Math.min(DEFAULTS.width, x + 1);
+          x = Math.min(DEFAULTS.width, x + inc);
           break;
         case 'ArrowLeft':
-          x = Math.max(0, x - 1);
+          x = Math.max(0, x - inc);
           break;
         case 'ArrowDown':
-          y = Math.min(DEFAULTS.height, y + 1);
+          y = Math.min(DEFAULTS.height, y + inc);
           break;
         case 'ArrowUp':
-          y = Math.max(0, y - 1);
+          y = Math.max(0, y - inc);
           break;
       }
 

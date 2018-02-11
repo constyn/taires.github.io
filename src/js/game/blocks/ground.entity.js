@@ -30,21 +30,26 @@ export default class GroundBlock extends Entity {
   }
 
   render(ctx, x, y, opt) {
-    super.render(ctx, x, y, opt);
+    super.render(ctx, x, y, {tile: this.props.renderTile});
     let {neigh} = opt,
       tile;
 
     if (neigh) {
       let tile;
+
       if (neigh[6] === undefined) {
+        super.render(ctx, x, y + 1, {
+          tile: this.props.renderTile + COLS
+        })
+
         if (neigh[3] === undefined && neigh[4] == undefined && neigh[1] === undefined) {
           tile = this.props._tile + (COLS * 2) + 10;
+        } else if (neigh[3] === undefined && neigh[4] == undefined) {
+          tile = this.props._tile + 10;
         } else if (neigh[3] === undefined && neigh[1] === undefined) {
           tile = this.props._tile + 12;
         } else if (neigh[4] === undefined && neigh[1] === undefined) {
           tile = this.props._tile + 12 + COLS;
-        } else if (neigh[3] === undefined && neigh[4] == undefined) {
-          tile = this.props._tile + 10;
         } else if (neigh[1] === undefined) {
           tile = this.props._tile + 11;
         } else if (neigh[3] === undefined) {
@@ -55,7 +60,6 @@ export default class GroundBlock extends Entity {
           tile = this.props._tile + (COLS * 2) + 8;
         }
 
-        super.render(ctx, x, y+1, {tile: COLS + 8})
       } else if (neigh[1] === undefined) {
         if (neigh[3] === undefined && neigh[4] === undefined) {
           tile = this.props._tile + COLS + 10;
