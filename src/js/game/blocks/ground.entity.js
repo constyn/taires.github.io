@@ -83,9 +83,7 @@ export default class GroundBlock extends Entity {
       let shadeTile;
 
       if (topNeigh[1] !== undefined) {
-        if (topNeigh[0] === undefined) {
-          shadeTile = this.props._tile + 13;
-        } else if (topNeigh[3] !== undefined) {
+        if (topNeigh[3] !== undefined) {
           shadeTile = this.props._tile + 17;
         } else {
           shadeTile = this.props._tile + 14;
