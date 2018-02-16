@@ -49,23 +49,23 @@ export default class TileContext extends AsyncOperation {
       highlightColor = ctx.getImageData(startX, startY, 1, 1),
       darkColor = ctx.getImageData(startX, startY, 1, 1),
       slopeColor = ctx.getImageData(startX, startY + TILE_SIZE, 1, 1),
-      darkSlopeColor = ctx.getImageData(startX, startY + TILE_SIZE, 1, 1);
+      darkSlopeColor = ctx.getImageData(startX, startY , 1, 1);
 
     highlightColor.data[0] += 15;
     highlightColor.data[1] += 15;
     highlightColor.data[2] += 15;
 
-    darkColor.data[0] -= 15;
-    darkColor.data[1] -= 15;
-    darkColor.data[2] -= 15;
+    darkColor.data[0] -= 25;
+    darkColor.data[1] -= 25;
+    darkColor.data[2] -= 25;
 
-    darkSlopeColor.data[0] -= 15;
-    darkSlopeColor.data[1] -= 15;
-    darkSlopeColor.data[2] -= 15;
+    darkSlopeColor.data[0] -= 55;
+    darkSlopeColor.data[1] -= 55;
+    darkSlopeColor.data[2] -= 55;
 
     ctx.fillStyle = `rgb(${color.data[0]}, ${color.data[1]}, ${color.data[2]})`;
     ctx.fillRect(startX, startY, TILE_SIZE * 4, TILE_SIZE)
-    ctx.fillRect(startX + TILE_SIZE * 7, startY, startX + TILE_SIZE * 12, startY + TILE_SIZE * 3);
+    ctx.fillRect(startX + TILE_SIZE * 7, startY, startX + TILE_SIZE * 3, startY + TILE_SIZE * 3);
     ctx.fillStyle = `rgb(${slopeColor.data[0]}, ${slopeColor.data[1]}, ${slopeColor.data[2]})`;
     ctx.fillRect(startX, startY + TILE_SIZE, TILE_SIZE * 4, TILE_SIZE)
 
@@ -105,6 +105,11 @@ export default class TileContext extends AsyncOperation {
     noise(darkSlopeColor, startX + TILE_SIZE * 2, startY + TILE_SIZE, .2);
     noise(darkSlopeColor, startX + TILE_SIZE * 3, startY + TILE_SIZE, .3);
 
+    noise(color, startX + TILE_SIZE * 13, startY + TILE_SIZE , .2);
+    noise(color, startX + TILE_SIZE * 14, startY + TILE_SIZE , .25);
+    noise(color, startX + TILE_SIZE * 15, startY + TILE_SIZE , .30);
+    noise(color, startX + TILE_SIZE * 16, startY + TILE_SIZE , .35);
+
     noise(darkColor, startX + TILE_SIZE * 13, startY, (x, y) => {
       return y < TILE_SIZE / 2 && x > y && Math.random() < .9;
     })
@@ -122,7 +127,7 @@ export default class TileContext extends AsyncOperation {
     })
 
     noise(darkColor, startX + TILE_SIZE * 17, startY, (x, y) => {
-      return y + x < TILE_SIZE + 8 && Math.random() < .9;
+      return y + x < TILE_SIZE + 10 && Math.random() < .9;
     })
 
     noise(darkColor, startX + TILE_SIZE * 18, startY, (x, y) => {
@@ -145,26 +150,22 @@ export default class TileContext extends AsyncOperation {
       for (let i = 0; i < TILE_SIZE; i += 2) {
 
         n
-          ? renderWithProbability(highlightColor, x + i, y, .8, true) && renderWithProbability(highlightColor, x + i, y + 1, .4, true) && renderWithProbability(color, x + i, y, .1)
+          ? renderWithProbability(highlightColor, x + i, y, .8) && renderWithProbability(highlightColor, x + i, y + 2, .4) && renderWithProbability(color, x + i, y, .1)
           : undefined;
         s
-          ? renderWithProbability(darkSlopeColor, x + i, y + TILE_SIZE - 2, 1, true) && renderWithProbability(darkColor, x + i, y + TILE_SIZE - 2, .6, true) && renderWithProbability(darkColor, x + i, y + TILE_SIZE - 4, .4, true)
+          ? renderWithProbability(darkSlopeColor, x + i, y + TILE_SIZE - 2, 1) &&
+           renderWithProbability(darkSlopeColor, x + i, y + TILE_SIZE - 4, .2) &&
+           renderWithProbability(darkColor, x + i, y + TILE_SIZE - 4, .6)
           : undefined;
 
         e
-          ? renderWithProbability(darkColor, x + TILE_SIZE - 2, y + i, 1, true) && renderWithProbability(darkSlopeColor, x + TILE_SIZE - 2, y + i, .8, true) && renderWithProbability(darkColor, x + TILE_SIZE - 4, y + i, .8, true) && renderWithProbability(darkColor, x + TILE_SIZE - 6, y + i, .6)
+          ? renderWithProbability(darkColor, x + TILE_SIZE - 2, y + i, 1) && renderWithProbability(darkSlopeColor, x + TILE_SIZE - 2, y + i, .8) && renderWithProbability(darkColor, x + TILE_SIZE - 4, y + i, .8) && renderWithProbability(darkColor, x + TILE_SIZE - 6, y + i, .6)
           : undefined
 
         w
-          ? renderWithProbability(highlightColor, x, y + i, .8, true) && renderWithProbability(highlightColor, x + 2, y + i, .6)
+          ? renderWithProbability(highlightColor, x, y + i, .9, true) && renderWithProbability(highlightColor, x + 2, y + i, .7)
           : undefined
       }
-
-      /*
-      ctx.font = '5pt Calibri';
-      ctx.fillStyle = '#000';
-      ctx.fillText(x/16 + "," + y/16, x, y + 10);
-      */
     }
 
     renderSquare(slopeColor, TILE_SIZE * 7, startY, 1, 0, 1, 0)
