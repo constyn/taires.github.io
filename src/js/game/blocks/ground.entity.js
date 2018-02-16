@@ -31,16 +31,23 @@ export default class GroundBlock extends Entity {
 
   render(ctx, x, y, opt) {
     super.render(ctx, x, y, {tile: this.props.renderTile});
-    let {neigh} = opt,
+    let {neigh, topNeigh} = opt,
       tile;
 
     if (neigh) {
       let tile;
 
       if (neigh[6] === undefined) {
+        /*
         super.render(ctx, x, y + 1, {
           tile: this.props.renderTile + COLS
         })
+        */
+
+        super.render(ctx, x, y, {
+          tile: this.props.renderTile + COLS
+        })
+        return;
 
         if (neigh[3] === undefined && neigh[4] == undefined && neigh[1] === undefined) {
           tile = this.props._tile + (COLS * 2) + 10;
@@ -82,6 +89,36 @@ export default class GroundBlock extends Entity {
         super.render(ctx, x, y, {tile})
       }
 
+      if (topNeigh[1] !== undefined) {
+        if (topNeigh[0] === undefined) {
+          super.render(ctx, x, y, {
+            tile: this.props._tile + 13
+          })
+        } else if (topNeigh[3] !== undefined) {
+          super.render(ctx, x, y, {
+            tile: this.props._tile + 17
+          })
+        } else {
+          super.render(ctx, x, y, {
+            tile: this.props._tile + 14
+          })
+        }
+      } else if (topNeigh[0] !== undefined) {
+
+        if (topNeigh[3] !== undefined) {
+          super.render(ctx, x, y, {
+            tile: this.props._tile + 16
+          })
+        } else {
+          super.render(ctx, x, y, {
+            tile: this.props._tile + 15
+          })
+        }
+      } else if (topNeigh[1] === undefined && topNeigh[3] !== undefined) {
+        super.render(ctx, x, y, {
+          tile: this.props._tile + 18
+        })
+      }
 
 
       //ctx.fillText(this.props.height, x * 16 + 2, y * 16 + 10);

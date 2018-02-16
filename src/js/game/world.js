@@ -32,13 +32,13 @@ export default class World extends Async {
       let x = Math.round(Math.random() * width),
         y = Math.round(Math.random() * height),
         hh = 3 + Math.round(Math.random() * 4);
-      // let start = .4 for (let j = 3; j < hh; j++) {   this.renderHill(j, x, y, start);   start /= 2; }
 
-      this.renderHill(3, x, y, .5);
-      this.renderHill(4, x, y, .2);
-      this.renderHill(5, x, y, .05);
+      this.renderHill(3, x, y, .09);
+      this.renderHill(4, x, y, .06);
+      this.renderHill(5, x, y, .03);
     }
 
+    //this.renderHill(3, 30, 30, .05);
     for (var i = 0; i < MAX_HEIGHT; i++) {
       this.layers.push(this.buildGround(i));
     }
@@ -47,22 +47,19 @@ export default class World extends Async {
     this.done();
   }
 
-  renderHill(height, startX, startY, strength) {
-    if (startX < 0 || startX > this.width - 1 || startY < 0 || startY > this.height - 1)
-      return;
+  renderHill(height, x, y, strength) {
+    let ws = this.width * strength,
+      hs = this.height * strength;
 
-    let nextStrength = strength - (Math.random() * 0.03);
-    if (nextStrength > 0 && this.heights[startY][startX] !== height) {
-      this.heights[startY][startX] = height;
+    for (let i = Math.max(0, x - ws); i < Math.min(this.width, x + ws); i++) {
+      for (let j = Math.max(0, y - hs); j < Math.min(this.height, y + hs); j++) {
+        let c1 = Math.abs(x - i),
+          c2 = Math.abs(y - j);
+        if (Math.sqrt(c1 * c1 + c2 * c2) < ws)
 
-      for (let xof of[-1, 0, 1]) {
-        for (let yof of[-1, 0, 1]) {
-          if (xof !== 0 || yof !== 0) {
-            this.renderHill(height, startX + xof, startY + yof, nextStrength)
-          }
+          this.heights[j][i] = height;
         }
       }
-    }
   }
 
   // normalizeHeights() {   let normalized = [];   for (let i = 0; i < this.height; i++) {     let row = [];     for (let j = 0; j < this.width; j++) {       row.push(Math.ceil(getNeightbours(this.heights, j, i).reduce((memo, item) => {
@@ -139,10 +136,8 @@ export default class World extends Async {
       for (let w = 0; w < this.width; w++) {
         let val = this.biomes[h][w];
         ctx.fillStyle = "rgb(" + (
-          125 + (val * 16)
-        ) + "," + (
-          125 - (val * 16)
-        ) + "," + 125 + ")";
+        125 + (val * 16)) + "," + (
+        125 - (val * 16)) + "," + 125 + ")";
         ctx.fillRect(w, h, 1, 1);
       }
     }
@@ -158,7 +153,7 @@ export default class World extends Async {
     let scHeight = window.innerHeight;
 
     ctx.clearRect(0, 0, scWidth, scHeight)
-    for (let l = 0; l < layers.length; l++) {
+    for (let l = 0; l < layers.length-1; l++) {
       let layer = layers[l];
       for (let i = 0; i < Math.min(scHeight / TILE_SIZE, layer.length); i++) {
         let row = layer[i + y];
@@ -167,7 +162,8 @@ export default class World extends Async {
             let obj = row[j + x];
             if (obj) {
               obj.render(ctx, j, i, {
-                neigh: getNeightbours(layer, j + x, i + y, true)
+                neigh: getNeightbours(layer, j + x, i + y, true),
+                topNeigh: getNeightbours(layers[l+1], j + x, i + y, true)
               })
             }
           }

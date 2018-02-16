@@ -47,6 +47,7 @@ export default class TileContext extends AsyncOperation {
   buildBlockTexture(ctx, startX, startY) {
     let color = ctx.getImageData(startX, startY, 1, 1),
       highlightColor = ctx.getImageData(startX, startY, 1, 1),
+      darkColor = ctx.getImageData(startX, startY, 1, 1),
       slopeColor = ctx.getImageData(startX, startY + TILE_SIZE, 1, 1),
       darkSlopeColor = ctx.getImageData(startX, startY + TILE_SIZE, 1, 1);
 
@@ -54,9 +55,13 @@ export default class TileContext extends AsyncOperation {
     highlightColor.data[1] += 15;
     highlightColor.data[2] += 15;
 
-    darkSlopeColor.data[0] -= 10;
-    darkSlopeColor.data[1] -= 10;
-    darkSlopeColor.data[2] -= 10;
+    darkColor.data[0] -= 15;
+    darkColor.data[1] -= 15;
+    darkColor.data[2] -= 15;
+
+    darkSlopeColor.data[0] -= 15;
+    darkSlopeColor.data[1] -= 15;
+    darkSlopeColor.data[2] -= 15;
 
     ctx.fillStyle = `rgb(${color.data[0]}, ${color.data[1]}, ${color.data[2]})`;
     ctx.fillRect(startX, startY, TILE_SIZE * 4, TILE_SIZE)
@@ -73,34 +78,59 @@ export default class TileContext extends AsyncOperation {
       }
     }
 
-    for (let x = 0; x < TILE_SIZE * 4; x += 2) {
-      put2xPixel(color, x, startY + TILE_SIZE * 2 - 2, .8)
-    }
-
-    function noise(col, sx, sy, probability) {
-      for (let y = 0; y < TILE_SIZE; y += 2) {
-        for (let x = 0; x < TILE_SIZE; x += 2) {
-          if (Math.random() < probability) {
-            ctx.putImageData(col, sx + x, sy + y);
-            ctx.putImageData(col, sx + x + 1, sy + y);
-            ctx.putImageData(col, sx + x, sy + y + 1);
-            ctx.putImageData(col, sx + x + 1, sy + y + 1);
+    function noise(col, sx, sy, probability, limitHeight = 0) {
+      let checkFn = typeof probability === 'function'
+        ? probability
+        : () => {
+          return Math.random() < probability
+        }
+        for (let y = 0; y < TILE_SIZE - limitHeight; y += 2) {
+          for (let x = 0; x < TILE_SIZE; x += 2) {
+            if (checkFn(x, y)) {
+              ctx.putImageData(col, sx + x, sy + y);
+              ctx.putImageData(col, sx + x + 1, sy + y);
+              ctx.putImageData(col, sx + x, sy + y + 1);
+              ctx.putImageData(col, sx + x + 1, sy + y + 1);
+            }
           }
         }
       }
-    }
 
-    noise(highlightColor, startX + TILE_SIZE, startY, .01);
-    noise(highlightColor, startX + TILE_SIZE * 2, startY, .02);
-    noise(highlightColor, startX + TILE_SIZE * 3, startY, .03);
+    noise(highlightColor, startX + TILE_SIZE, startY, .02);
+    noise(highlightColor, startX + TILE_SIZE * 2, startY, .04);
+    noise(highlightColor, startX + TILE_SIZE * 3, startY, .06);
 
-    noise(darkSlopeColor, startX, startY + TILE_SIZE, .05);
+    noise(darkSlopeColor, startX, startY + TILE_SIZE, .05, 6);
     noise(darkSlopeColor, startX + TILE_SIZE, startY + TILE_SIZE, .1);
     noise(darkSlopeColor, startX + TILE_SIZE * 2, startY + TILE_SIZE, .2);
     noise(darkSlopeColor, startX + TILE_SIZE * 3, startY + TILE_SIZE, .3);
 
+    noise(darkColor, startX + TILE_SIZE * 13, startY, (x, y) => {
+      return y < TILE_SIZE / 2 && x > y && Math.random() < .9;
+    })
+
+    noise(darkColor, startX + TILE_SIZE * 14, startY, (x, y) => {
+      return y < TILE_SIZE / 2 && Math.random() < .9
+    })
+
+    noise(darkColor, startX + TILE_SIZE * 15, startY, (x, y) => {
+      return x + y < TILE_SIZE / 2 && Math.random() < .9;
+    })
+
+    noise(darkColor, startX + TILE_SIZE * 16, startY, (x, y) => {
+      return x < TILE_SIZE / 2 && Math.random() < .9;
+    })
+
+    noise(darkColor, startX + TILE_SIZE * 17, startY, (x, y) => {
+      return y + x < TILE_SIZE + 8 && Math.random() < .9;
+    })
+
+    noise(darkColor, startX + TILE_SIZE * 18, startY, (x, y) => {
+      return x < y && x < 8 && Math.random() < .9;
+    })
+
     function renderWithProbability(what, x, y, probability, xor) {
-      if (Math.random() < probability) {
+      if (Math.random() <= probability) {
         ctx.putImageData(what, x, y);
         ctx.putImageData(what, x + 1, y);
         ctx.putImageData(what, x, y + 1);
@@ -110,23 +140,23 @@ export default class TileContext extends AsyncOperation {
       return !xor;
     }
 
-    function renderSquare(color, x, y, n, s, w, e, bgCol) {
+    function renderSquare(color, x, y, n, s, w, e) {
 
       for (let i = 0; i < TILE_SIZE; i += 2) {
 
         n
-          ? renderWithProbability(bgCol, x + i, y, .8, true) && renderWithProbability(bgCol, x + i, y + 1, .4, true) && renderWithProbability(color, x + i, y, .1)
+          ? renderWithProbability(highlightColor, x + i, y, .8, true) && renderWithProbability(highlightColor, x + i, y + 1, .4, true) && renderWithProbability(color, x + i, y, .1)
           : undefined;
         s
-          ? renderWithProbability(color, x + i, y + TILE_SIZE - 2, .8, true) && renderWithProbability(color, x + i, y + TILE_SIZE - 4, .4, true) && renderWithProbability(color, x + i, y + TILE_SIZE - 4, 0)
+          ? renderWithProbability(darkSlopeColor, x + i, y + TILE_SIZE - 2, 1, true) && renderWithProbability(darkColor, x + i, y + TILE_SIZE - 2, .6, true) && renderWithProbability(darkColor, x + i, y + TILE_SIZE - 4, .4, true)
           : undefined;
 
         e
-          ? renderWithProbability(color, x + TILE_SIZE - 2, y + i, .8, true) && renderWithProbability(color, x + TILE_SIZE - 4, y + i, .6)
+          ? renderWithProbability(darkColor, x + TILE_SIZE - 2, y + i, 1, true) && renderWithProbability(darkSlopeColor, x + TILE_SIZE - 2, y + i, .8, true) && renderWithProbability(darkColor, x + TILE_SIZE - 4, y + i, .8, true) && renderWithProbability(darkColor, x + TILE_SIZE - 6, y + i, .6)
           : undefined
 
         w
-          ? renderWithProbability(bgCol, x, y + i, .8, true) && renderWithProbability(bgCol, x + 2, y + i, .6)
+          ? renderWithProbability(highlightColor, x, y + i, .8, true) && renderWithProbability(highlightColor, x + 2, y + i, .6)
           : undefined
       }
 
@@ -137,25 +167,25 @@ export default class TileContext extends AsyncOperation {
       */
     }
 
-    renderSquare(slopeColor, TILE_SIZE * 7, startY, 1, 0, 1, 0, highlightColor)
-    renderSquare(slopeColor, TILE_SIZE * 8, startY, 1, 0, 0, 0, highlightColor)
-    renderSquare(slopeColor, TILE_SIZE * 9, startY, 1, 0, 0, 1, highlightColor)
+    renderSquare(slopeColor, TILE_SIZE * 7, startY, 1, 0, 1, 0)
+    renderSquare(slopeColor, TILE_SIZE * 8, startY, 1, 0, 0, 0)
+    renderSquare(slopeColor, TILE_SIZE * 9, startY, 1, 0, 0, 1)
 
-    renderSquare(slopeColor, TILE_SIZE * 7, startY + TILE_SIZE, 0, 0, 1, 0, highlightColor)
-    renderSquare(slopeColor, TILE_SIZE * 9, startY + TILE_SIZE, 0, 0, 0, 1, highlightColor)
+    renderSquare(slopeColor, TILE_SIZE * 7, startY + TILE_SIZE, 0, 0, 1, 0)
+    renderSquare(slopeColor, TILE_SIZE * 9, startY + TILE_SIZE, 0, 0, 0, 1)
 
-    renderSquare(slopeColor, TILE_SIZE * 7, startY + TILE_SIZE * 2, 0, 1, 1, 0, highlightColor)
-    renderSquare(slopeColor, TILE_SIZE * 8, startY + TILE_SIZE * 2, 0, 1, 0, 0, highlightColor)
-    renderSquare(slopeColor, TILE_SIZE * 9, startY + TILE_SIZE * 2, 0, 1, 0, 1, highlightColor)
+    renderSquare(slopeColor, TILE_SIZE * 7, startY + TILE_SIZE * 2, 0, 1, 1, 0)
+    renderSquare(slopeColor, TILE_SIZE * 8, startY + TILE_SIZE * 2, 0, 1, 0, 0)
+    renderSquare(slopeColor, TILE_SIZE * 9, startY + TILE_SIZE * 2, 0, 1, 0, 1)
 
-    renderSquare(slopeColor, TILE_SIZE * 10, startY, 0, 1, 1, 1, highlightColor)
-    renderSquare(slopeColor, TILE_SIZE * 10, startY + TILE_SIZE, 1, 0, 1, 1, highlightColor)
-    renderSquare(slopeColor, TILE_SIZE * 10, startY + TILE_SIZE * 2, 1, 1, 1, 1, highlightColor)
-    renderSquare(slopeColor, TILE_SIZE * 11, startY, 1, 1, 0, 0, highlightColor)
-    renderSquare(slopeColor, TILE_SIZE * 11, startY + TILE_SIZE, 0, 0, 1, 1, highlightColor)
-    renderSquare(slopeColor, TILE_SIZE * 12, startY, 1, 1, 1, 0, highlightColor)
+    renderSquare(slopeColor, TILE_SIZE * 10, startY, 0, 1, 1, 1)
+    renderSquare(slopeColor, TILE_SIZE * 10, startY + TILE_SIZE, 1, 0, 1, 1)
+    renderSquare(slopeColor, TILE_SIZE * 10, startY + TILE_SIZE * 2, 1, 1, 1, 1)
+    renderSquare(slopeColor, TILE_SIZE * 11, startY, 1, 1, 0, 0)
+    renderSquare(slopeColor, TILE_SIZE * 11, startY + TILE_SIZE, 0, 0, 1, 1)
+    renderSquare(slopeColor, TILE_SIZE * 12, startY, 1, 1, 1, 0)
 
-    renderSquare(slopeColor, TILE_SIZE * 12, startY + TILE_SIZE, 1, 1, 0, 1, highlightColor)
+    renderSquare(slopeColor, TILE_SIZE * 12, startY + TILE_SIZE, 1, 1, 0, 1)
 
   }
 

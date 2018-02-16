@@ -566,13 +566,13 @@ let World = class World extends __WEBPACK_IMPORTED_MODULE_0__core_async__["a" /*
       let x = Math.round(Math.random() * width),
           y = Math.round(Math.random() * height),
           hh = 3 + Math.round(Math.random() * 4);
-      // let start = .4 for (let j = 3; j < hh; j++) {   this.renderHill(j, x, y, start);   start /= 2; }
 
-      this.renderHill(3, x, y, .5);
-      this.renderHill(4, x, y, .2);
-      this.renderHill(5, x, y, .05);
+      this.renderHill(3, x, y, .09);
+      this.renderHill(4, x, y, .06);
+      this.renderHill(5, x, y, .03);
     }
 
+    //this.renderHill(3, 30, 30, .05);
     for (var i = 0; i < MAX_HEIGHT; i++) {
       this.layers.push(this.buildGround(i));
     }
@@ -581,19 +581,15 @@ let World = class World extends __WEBPACK_IMPORTED_MODULE_0__core_async__["a" /*
     this.done();
   }
 
-  renderHill(height, startX, startY, strength) {
-    if (startX < 0 || startX > this.width - 1 || startY < 0 || startY > this.height - 1) return;
+  renderHill(height, x, y, strength) {
+    let ws = this.width * strength,
+        hs = this.height * strength;
 
-    let nextStrength = strength - Math.random() * 0.03;
-    if (nextStrength > 0 && this.heights[startY][startX] !== height) {
-      this.heights[startY][startX] = height;
-
-      for (let xof of [-1, 0, 1]) {
-        for (let yof of [-1, 0, 1]) {
-          if (xof !== 0 || yof !== 0) {
-            this.renderHill(height, startX + xof, startY + yof, nextStrength);
-          }
-        }
+    for (let i = Math.max(0, x - ws); i < Math.min(this.width, x + ws); i++) {
+      for (let j = Math.max(0, y - hs); j < Math.min(this.height, y + hs); j++) {
+        let c1 = Math.abs(x - i),
+            c2 = Math.abs(y - j);
+        if (Math.sqrt(c1 * c1 + c2 * c2) < ws) this.heights[j][i] = height;
       }
     }
   }
@@ -688,7 +684,7 @@ let World = class World extends __WEBPACK_IMPORTED_MODULE_0__core_async__["a" /*
     let scHeight = window.innerHeight;
 
     ctx.clearRect(0, 0, scWidth, scHeight);
-    for (let l = 0; l < layers.length; l++) {
+    for (let l = 0; l < layers.length - 1; l++) {
       let layer = layers[l];
       for (let i = 0; i < Math.min(scHeight / __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], layer.length); i++) {
         let row = layer[i + y];
@@ -697,7 +693,8 @@ let World = class World extends __WEBPACK_IMPORTED_MODULE_0__core_async__["a" /*
             let obj = row[j + x];
             if (obj) {
               obj.render(ctx, j, i, {
-                neigh: Object(__WEBPACK_IMPORTED_MODULE_3__core_utils__["a" /* getNeightbours */])(layer, j + x, i + y, true)
+                neigh: Object(__WEBPACK_IMPORTED_MODULE_3__core_utils__["a" /* getNeightbours */])(layer, j + x, i + y, true),
+                topNeigh: Object(__WEBPACK_IMPORTED_MODULE_3__core_utils__["a" /* getNeightbours */])(layers[l + 1], j + x, i + y, true)
               });
             }
           }
@@ -791,6 +788,7 @@ let GroundBlock = class GroundBlock extends __WEBPACK_IMPORTED_MODULE_0__entity_
   render(ctx, x, y, opt) {
     super.render(ctx, x, y, { tile: this.props.renderTile });
     let neigh = opt.neigh,
+        topNeigh = opt.topNeigh,
         tile;
 
 
@@ -798,9 +796,16 @@ let GroundBlock = class GroundBlock extends __WEBPACK_IMPORTED_MODULE_0__entity_
       let tile;
 
       if (neigh[6] === undefined) {
+        /*
         super.render(ctx, x, y + 1, {
           tile: this.props.renderTile + COLS
+        })
+        */
+
+        super.render(ctx, x, y, {
+          tile: this.props.renderTile + COLS
         });
+        return;
 
         if (neigh[3] === undefined && neigh[4] == undefined && neigh[1] === undefined) {
           tile = this.props._tile + COLS * 2 + 10;
@@ -839,6 +844,37 @@ let GroundBlock = class GroundBlock extends __WEBPACK_IMPORTED_MODULE_0__entity_
 
       if (tile) {
         super.render(ctx, x, y, { tile });
+      }
+
+      if (topNeigh[1] !== undefined) {
+        if (topNeigh[0] === undefined) {
+          super.render(ctx, x, y, {
+            tile: this.props._tile + 13
+          });
+        } else if (topNeigh[3] !== undefined) {
+          super.render(ctx, x, y, {
+            tile: this.props._tile + 17
+          });
+        } else {
+          super.render(ctx, x, y, {
+            tile: this.props._tile + 14
+          });
+        }
+      } else if (topNeigh[0] !== undefined) {
+
+        if (topNeigh[3] !== undefined) {
+          super.render(ctx, x, y, {
+            tile: this.props._tile + 16
+          });
+        } else {
+          super.render(ctx, x, y, {
+            tile: this.props._tile + 15
+          });
+        }
+      } else if (topNeigh[1] === undefined && topNeigh[3] !== undefined) {
+        super.render(ctx, x, y, {
+          tile: this.props._tile + 18
+        });
       }
 
       //ctx.fillText(this.props.height, x * 16 + 2, y * 16 + 10);
@@ -959,6 +995,7 @@ let TileContext = class TileContext extends __WEBPACK_IMPORTED_MODULE_0__core_as
   buildBlockTexture(ctx, startX, startY) {
     let color = ctx.getImageData(startX, startY, 1, 1),
         highlightColor = ctx.getImageData(startX, startY, 1, 1),
+        darkColor = ctx.getImageData(startX, startY, 1, 1),
         slopeColor = ctx.getImageData(startX, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], 1, 1),
         darkSlopeColor = ctx.getImageData(startX, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], 1, 1);
 
@@ -966,9 +1003,13 @@ let TileContext = class TileContext extends __WEBPACK_IMPORTED_MODULE_0__core_as
     highlightColor.data[1] += 15;
     highlightColor.data[2] += 15;
 
-    darkSlopeColor.data[0] -= 10;
-    darkSlopeColor.data[1] -= 10;
-    darkSlopeColor.data[2] -= 10;
+    darkColor.data[0] -= 15;
+    darkColor.data[1] -= 15;
+    darkColor.data[2] -= 15;
+
+    darkSlopeColor.data[0] -= 15;
+    darkSlopeColor.data[1] -= 15;
+    darkSlopeColor.data[2] -= 15;
 
     ctx.fillStyle = `rgb(${color.data[0]}, ${color.data[1]}, ${color.data[2]})`;
     ctx.fillRect(startX, startY, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 4, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */]);
@@ -985,14 +1026,13 @@ let TileContext = class TileContext extends __WEBPACK_IMPORTED_MODULE_0__core_as
       }
     }
 
-    for (let x = 0; x < __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 4; x += 2) {
-      put2xPixel(color, x, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 2 - 2, .8);
-    }
-
-    function noise(col, sx, sy, probability) {
-      for (let y = 0; y < __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */]; y += 2) {
+    function noise(col, sx, sy, probability, limitHeight = 0) {
+      let checkFn = typeof probability === 'function' ? probability : () => {
+        return Math.random() < probability;
+      };
+      for (let y = 0; y < __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - limitHeight; y += 2) {
         for (let x = 0; x < __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */]; x += 2) {
-          if (Math.random() < probability) {
+          if (checkFn(x, y)) {
             ctx.putImageData(col, sx + x, sy + y);
             ctx.putImageData(col, sx + x + 1, sy + y);
             ctx.putImageData(col, sx + x, sy + y + 1);
@@ -1002,17 +1042,41 @@ let TileContext = class TileContext extends __WEBPACK_IMPORTED_MODULE_0__core_as
       }
     }
 
-    noise(highlightColor, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], startY, .01);
-    noise(highlightColor, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 2, startY, .02);
-    noise(highlightColor, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 3, startY, .03);
+    noise(highlightColor, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], startY, .02);
+    noise(highlightColor, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 2, startY, .04);
+    noise(highlightColor, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 3, startY, .06);
 
-    noise(darkSlopeColor, startX, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], .05);
+    noise(darkSlopeColor, startX, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], .05, 6);
     noise(darkSlopeColor, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], .1);
     noise(darkSlopeColor, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 2, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], .2);
     noise(darkSlopeColor, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 3, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], .3);
 
+    noise(darkColor, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 13, startY, (x, y) => {
+      return y < __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] / 2 && x > y && Math.random() < .9;
+    });
+
+    noise(darkColor, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 14, startY, (x, y) => {
+      return y < __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] / 2 && Math.random() < .9;
+    });
+
+    noise(darkColor, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 15, startY, (x, y) => {
+      return x + y < __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] / 2 && Math.random() < .9;
+    });
+
+    noise(darkColor, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 16, startY, (x, y) => {
+      return x < __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] / 2 && Math.random() < .9;
+    });
+
+    noise(darkColor, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 17, startY, (x, y) => {
+      return y + x < __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] + 8 && Math.random() < .9;
+    });
+
+    noise(darkColor, startX + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 18, startY, (x, y) => {
+      return x < y && x < 8 && Math.random() < .9;
+    });
+
     function renderWithProbability(what, x, y, probability, xor) {
-      if (Math.random() < probability) {
+      if (Math.random() <= probability) {
         ctx.putImageData(what, x, y);
         ctx.putImageData(what, x + 1, y);
         ctx.putImageData(what, x, y + 1);
@@ -1022,16 +1086,16 @@ let TileContext = class TileContext extends __WEBPACK_IMPORTED_MODULE_0__core_as
       return !xor;
     }
 
-    function renderSquare(color, x, y, n, s, w, e, bgCol) {
+    function renderSquare(color, x, y, n, s, w, e) {
 
       for (let i = 0; i < __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */]; i += 2) {
 
-        n ? renderWithProbability(bgCol, x + i, y, .8, true) && renderWithProbability(bgCol, x + i, y + 1, .4, true) && renderWithProbability(color, x + i, y, .1) : undefined;
-        s ? renderWithProbability(color, x + i, y + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 2, .8, true) && renderWithProbability(color, x + i, y + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 4, .4, true) && renderWithProbability(color, x + i, y + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 4, 0) : undefined;
+        n ? renderWithProbability(highlightColor, x + i, y, .8, true) && renderWithProbability(highlightColor, x + i, y + 1, .4, true) && renderWithProbability(color, x + i, y, .1) : undefined;
+        s ? renderWithProbability(darkSlopeColor, x + i, y + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 2, 1, true) && renderWithProbability(darkColor, x + i, y + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 2, .6, true) && renderWithProbability(darkColor, x + i, y + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 4, .4, true) : undefined;
 
-        e ? renderWithProbability(color, x + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 2, y + i, .8, true) && renderWithProbability(color, x + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 4, y + i, .6) : undefined;
+        e ? renderWithProbability(darkColor, x + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 2, y + i, 1, true) && renderWithProbability(darkSlopeColor, x + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 2, y + i, .8, true) && renderWithProbability(darkColor, x + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 4, y + i, .8, true) && renderWithProbability(darkColor, x + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] - 6, y + i, .6) : undefined;
 
-        w ? renderWithProbability(bgCol, x, y + i, .8, true) && renderWithProbability(bgCol, x + 2, y + i, .6) : undefined;
+        w ? renderWithProbability(highlightColor, x, y + i, .8, true) && renderWithProbability(highlightColor, x + 2, y + i, .6) : undefined;
       }
 
       /*
@@ -1041,25 +1105,25 @@ let TileContext = class TileContext extends __WEBPACK_IMPORTED_MODULE_0__core_as
       */
     }
 
-    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 7, startY, 1, 0, 1, 0, highlightColor);
-    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 8, startY, 1, 0, 0, 0, highlightColor);
-    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 9, startY, 1, 0, 0, 1, highlightColor);
+    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 7, startY, 1, 0, 1, 0);
+    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 8, startY, 1, 0, 0, 0);
+    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 9, startY, 1, 0, 0, 1);
 
-    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 7, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], 0, 0, 1, 0, highlightColor);
-    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 9, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], 0, 0, 0, 1, highlightColor);
+    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 7, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], 0, 0, 1, 0);
+    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 9, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], 0, 0, 0, 1);
 
-    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 7, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 2, 0, 1, 1, 0, highlightColor);
-    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 8, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 2, 0, 1, 0, 0, highlightColor);
-    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 9, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 2, 0, 1, 0, 1, highlightColor);
+    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 7, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 2, 0, 1, 1, 0);
+    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 8, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 2, 0, 1, 0, 0);
+    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 9, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 2, 0, 1, 0, 1);
 
-    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 10, startY, 0, 1, 1, 1, highlightColor);
-    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 10, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], 1, 0, 1, 1, highlightColor);
-    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 10, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 2, 1, 1, 1, 1, highlightColor);
-    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 11, startY, 1, 1, 0, 0, highlightColor);
-    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 11, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], 0, 0, 1, 1, highlightColor);
-    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 12, startY, 1, 1, 1, 0, highlightColor);
+    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 10, startY, 0, 1, 1, 1);
+    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 10, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], 1, 0, 1, 1);
+    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 10, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 2, 1, 1, 1, 1);
+    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 11, startY, 1, 1, 0, 0);
+    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 11, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], 0, 0, 1, 1);
+    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 12, startY, 1, 1, 1, 0);
 
-    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 12, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], 1, 1, 0, 1, highlightColor);
+    renderSquare(slopeColor, __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */] * 12, startY + __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["b" /* TILE_SIZE */], 1, 1, 0, 1);
   }
 
   renderTile(ctx, col, row, tile) {
