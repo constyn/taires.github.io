@@ -1,7 +1,7 @@
 const base64Img = require('base64-img');
 const fs = require('fs')
 
-let arr = ['ground', 'walls']
+let arr = ['ground', 'walls', 'creatures']
 
 
 arr.forEach(item => {

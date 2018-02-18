@@ -44,11 +44,13 @@ export default class World extends AsyncUtil {
       layoutBuildings(this)
     })
 
+    this.addItem('creatures', 5, 5, this.heights[5][5]);
+
     this.done();
   }
 
   addItem(type, x, y, z, opt) {
-    let item = this.getItem(type, opt);
+    let item = this.getItem(type, {...opt, x, y, z});
     if (item) {
       if (item.props.block) {
         this.heights[y][x] = z;
@@ -102,7 +104,7 @@ export default class World extends AsyncUtil {
       let row = [];
       for (let w = 0; w < this.width; w++) {
         if (this.heights[h][w] > height) {
-          row.push(Items.getItem('ground', {
+          row.push(this.getItem('ground', {
             biome: this.biomes[h][w],
             height: this.heights[h][w]
           }, {}))

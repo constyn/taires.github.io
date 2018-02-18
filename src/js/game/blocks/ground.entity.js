@@ -33,47 +33,49 @@ export default class GroundBlock extends Entity {
 
   render(ctx, x, y, opt) {
     super.render(ctx, x, y, {tile: this.props.renderTile});
-    let {neigh, topNeigh, biomeNeigh} = opt, {biome, offset} = this.props,
-      tile;
+    let {neigh, topNeigh, biomeNeigh} = opt, {biome, offset} = this.props, {typeOf} = this,
+      tile,
+      shadeTile,
+      preTile;
 
     if (neigh) {
       let tile;
 
-      if (neigh[6] === undefined) {
+      if (!typeOf(neigh[6])) {
 
-        if (neigh[3] === undefined && neigh[4] == undefined && neigh[1] === undefined) {
+        if (!typeOf(neigh[3]) && !typeOf(neigh[4]) && !typeOf(neigh[1])) {
           tile = this.props._tile + (COLS * 2) + 10;
-        } else if (neigh[3] === undefined && neigh[4] == undefined) {
+        } else if (!typeOf(neigh[3]) && !typeOf(neigh[4])) {
           tile = this.props._tile + 10;
-        } else if (neigh[3] === undefined && neigh[1] === undefined) {
+        } else if (!typeOf(neigh[3]) && !typeOf(neigh[1])) {
           tile = this.props._tile + 12;
-        } else if (neigh[4] === undefined && neigh[1] === undefined) {
+        } else if (!typeOf(neigh[4]) && !typeOf(neigh[1])) {
           tile = this.props._tile + 12 + COLS;
-        } else if (neigh[1] === undefined) {
+        } else if (!typeOf(neigh[1])) {
           tile = this.props._tile + 11;
-        } else if (neigh[3] === undefined) {
+        } else if (!typeOf(neigh[3])) {
           tile = this.props._tile + (COLS * 2) + 7;
-        } else if (neigh[4] === undefined) {
+        } else if (!typeOf(neigh[4])) {
           tile = this.props._tile + (COLS * 2) + 9;
         } else {
           tile = this.props._tile + (COLS * 2) + 8;
         }
 
-      } else if (neigh[1] === undefined) {
-        if (neigh[3] === undefined && neigh[4] === undefined) {
+      } else if (!typeOf(neigh[1])) {
+        if (!typeOf(neigh[3]) && !typeOf(neigh[4])) {
           tile = this.props._tile + COLS + 10;
-        } else if (neigh[3] === undefined) {
+        } else if (!typeOf(neigh[3])) {
           tile = this.props._tile + 7;
-        } else if (neigh[4] === undefined) {
+        } else if (!typeOf(neigh[4])) {
           tile = this.props._tile + 9;
         } else {
           tile = this.props._tile + 8;
         }
-      } else if (neigh[3] === undefined && neigh[4] === undefined) {
+      } else if (!typeOf(neigh[3]) && !typeOf(neigh[4])) {
         tile = this.props._tile + 11 + COLS;
-      } else if (neigh[4] === undefined) {
+      } else if (!typeOf(neigh[4])) {
         tile = this.props._tile + COLS + 9;
-      } else if (neigh[3] === undefined) {
+      } else if (!typeOf(neigh[3])) {
         tile = this.props._tile + COLS + 7;
       }
 
@@ -81,27 +83,24 @@ export default class GroundBlock extends Entity {
         super.render(ctx, x, y, {tile})
       }
 
-      let shadeTile;
-
-      if (topNeigh[1] !== undefined) {
-        if (topNeigh[0] === undefined) {
+      if (typeOf(topNeigh[1], {block: true})) {
+        if (!typeOf(topNeigh[0])) {
           shadeTile = this.props._tile + 13;
-        } else if (topNeigh[3] !== undefined) {
+        } else if (typeOf(topNeigh[3], {block: true})) {
           shadeTile = this.props._tile + 17;
         } else {
           shadeTile = this.props._tile + 14;
         }
-      } else if (topNeigh[0] !== undefined) {
-        if (topNeigh[3] !== undefined) {
+      } else if (typeOf(topNeigh[0], {block: true})) {
+        if (typeOf(topNeigh[3], {block: true})) {
           shadeTile = this.props._tile + 16;
         } else {
           shadeTile = this.props._tile + 15;
         }
-      } else if (topNeigh[1] === undefined && topNeigh[3] !== undefined) {
+      } else if (!typeOf(topNeigh[1]) && typeOf(topNeigh[3], {block: true})) {
         shadeTile = this.props._tile + 18;
       }
 
-      let preTile;
       if (biomeNeigh[6] !== biome) {
         if (biomeNeigh[3] !== biome && biomeNeigh[4] !== biome) {
           preTile = this.props._tile + 10

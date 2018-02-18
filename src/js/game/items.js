@@ -1,9 +1,11 @@
 import Ground from './blocks/ground.entity';
 import Wall from './blocks/wall.entity';
+import Creatures from './entities/creature.entity';
 
 const keys = {
   'ground': [Ground],
-  'wall': [Wall]
+  'wall': [Wall],
+  'creatures': [Creatures]
 }
 
 export default class Items {

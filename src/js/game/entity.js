@@ -1,5 +1,6 @@
 import {BASIC} from './defaults';
 import Tileset from '../render/tilesets';
+import {matchProps} from '../core/utils';
 
 export default class Entity {
 
@@ -17,7 +18,10 @@ export default class Entity {
         return ref(this)
       };
     })
+  }
 
+  typeOf(block, toMatch = {}) {
+    return block !== undefined && matchProps(block.props, toMatch);
   }
 
   getTile(neigh) {

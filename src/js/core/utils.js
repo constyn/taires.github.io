@@ -146,3 +146,13 @@ export function random(min, max, int) {
 export function getRenderBoundaries() {
   return [document.body.clientWidth, window.innerHeight]
 }
+
+export function matchProps(source = -1, target = -1) {
+  let res = true;
+  if (source !== target) {
+    Object.keys(target).forEach(key => {
+      res = res && target[key] === source[key];
+    })
+  }
+  return res;
+}
