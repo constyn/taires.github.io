@@ -1,12 +1,14 @@
+import * as util from '../core/utils';
+
 const listeners = [];
 
 var numToLoad = 0;
+
 
 export default class Async {
 
   constructor() {
     listeners.push(this)
-    console.log("Pushing ", this)
     numToLoad++;
   }
 
@@ -14,7 +16,7 @@ export default class Async {
     numToLoad--;
     console.log("Loaded ", this)
     if (numToLoad === 0) {
-      listeners.forEach( inst => {
+      listeners.forEach(inst => {
         inst.onLoaded();
       })
 
@@ -22,9 +24,15 @@ export default class Async {
     }
   }
 
-  onLoaded() {
+  onLoaded() {}
 
-  }
+}
 
+export class AsyncUtil extends Async {
+
+    constructor() {
+      super();
+      Object.assign(this, util);
+    }
 
 }

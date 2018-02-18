@@ -5,14 +5,11 @@ export default class WallBlock extends Entity {
 
   constructor(props) {
     super({
+      tileset: 'wall',
       block: true,
-      tile: 15,
+      tile: 1,
       ...props
     })
-  }
-
-  getTile() {
-    return 7 + this.props.biome;
   }
 
 }

@@ -1,5 +1,4 @@
 const BASIC = {
-  tileset: 'default',
   block: false,
   tile: 0,
 

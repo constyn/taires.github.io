@@ -14,6 +14,7 @@ export default class GroundBlock extends Entity {
   constructor(properties) {
     super({
       ...properties,
+      tileset: 'ground',
       tile: 1,
       name: 'ground',
       block: true

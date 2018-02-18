@@ -7,21 +7,21 @@ export default class TileContext extends AsyncOperation {
   constructor(options) {
     super();
     this.options = options;
-    const {remote, tileset, cols} = options;
+    const {remote, tileset, cols, isGround} = options;
 
     if (remote) {
       loader.load(remote).then(data => {
-        this.processImage(data.image, data.columns);
+        this.processImage(data.image, data.columns, isGround);
       })
-    } else if (tileset, cols) {
-      this.processImage(tileset, cols)
+    } else if (tileset) {
+      this.processImage(tileset, cols, isGround)
     } else {
       throw new Error("Please provide (remote || tileset, colLength) as options for TileContext");
     }
 
   }
 
-  processImage(tileset, colLength) {
+  processImage(tileset, colLength, isGround) {
     this.tilesetImage = new Image();
     var m_canvas = document.createElement('canvas');
 
@@ -33,8 +33,10 @@ export default class TileContext extends AsyncOperation {
       m_canvas.height = this.tilesetImage.height;
       var m_context = m_canvas.getContext("2d");
       m_context.drawImage(this.tilesetImage, 0, 0);
-      for (let i = 0; i < 6; i++) {
-        this.buildBlockTexture(m_context, 0, i * TILE_SIZE * 3);
+      if (isGround) {
+        for (let i = 0; i < 6; i++) {
+          this.buildBlockTexture(m_context, 0, i * TILE_SIZE * 3);
+        }
       }
       this.tilesetImage.src = m_canvas.toDataURL();
 
@@ -49,7 +51,7 @@ export default class TileContext extends AsyncOperation {
       highlightColor = ctx.getImageData(startX, startY, 1, 1),
       darkColor = ctx.getImageData(startX, startY, 1, 1),
       slopeColor = ctx.getImageData(startX, startY + TILE_SIZE, 1, 1),
-      darkSlopeColor = ctx.getImageData(startX, startY , 1, 1);
+      darkSlopeColor = ctx.getImageData(startX, startY, 1, 1);
 
     highlightColor.data[0] += 15;
     highlightColor.data[1] += 15;
@@ -105,10 +107,10 @@ export default class TileContext extends AsyncOperation {
     noise(darkSlopeColor, startX + TILE_SIZE * 2, startY + TILE_SIZE, .2);
     noise(darkSlopeColor, startX + TILE_SIZE * 3, startY + TILE_SIZE, .3);
 
-    noise(color, startX + TILE_SIZE * 13, startY + TILE_SIZE , .2);
-    noise(color, startX + TILE_SIZE * 14, startY + TILE_SIZE , .25);
-    noise(color, startX + TILE_SIZE * 15, startY + TILE_SIZE , .30);
-    noise(color, startX + TILE_SIZE * 16, startY + TILE_SIZE , .35);
+    noise(color, startX + TILE_SIZE * 13, startY + TILE_SIZE, .2);
+    noise(color, startX + TILE_SIZE * 14, startY + TILE_SIZE, .25);
+    noise(color, startX + TILE_SIZE * 15, startY + TILE_SIZE, .30);
+    noise(color, startX + TILE_SIZE * 16, startY + TILE_SIZE, .35);
 
     noise(darkColor, startX + TILE_SIZE * 13, startY, (x, y) => {
       return y < TILE_SIZE / 2 && x > y && Math.random() < .9;
@@ -153,9 +155,7 @@ export default class TileContext extends AsyncOperation {
           ? renderWithProbability(highlightColor, x + i, y, .8) && renderWithProbability(highlightColor, x + i, y + 2, .4) && renderWithProbability(color, x + i, y, .1)
           : undefined;
         s
-          ? renderWithProbability(darkSlopeColor, x + i, y + TILE_SIZE - 2, 1) &&
-           renderWithProbability(darkSlopeColor, x + i, y + TILE_SIZE - 4, .2) &&
-           renderWithProbability(darkColor, x + i, y + TILE_SIZE - 4, .6)
+          ? renderWithProbability(darkSlopeColor, x + i, y + TILE_SIZE - 2, 1) && renderWithProbability(darkSlopeColor, x + i, y + TILE_SIZE - 4, .2) && renderWithProbability(darkColor, x + i, y + TILE_SIZE - 4, .6)
           : undefined;
 
         e
@@ -193,6 +193,7 @@ export default class TileContext extends AsyncOperation {
   renderTile(ctx, col, row, tile) {
     var tileRow = (tile / this.colLength) | 0; // Bitwise OR operation
     var tileCol = (tile % this.colLength) | 0;
+
     ctx.drawImage(this.tilesetImage, (tileCol * TILE_SIZE), (tileRow * TILE_SIZE), TILE_SIZE, TILE_SIZE, (col * TILE_SIZE), (row * TILE_SIZE), TILE_SIZE, TILE_SIZE);
   }
 

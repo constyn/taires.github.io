@@ -1,34 +1,31 @@
-import Async from '../core/async';
+import {AsyncUtil} from '../core/async';
 import Items from './items';
 import {TILE_SIZE} from '../defaults/tilesets';
 import {initializeMatrix, getNeightbours} from '../core/utils';
 
+import {layoutBuildings} from './buildings/village';
+
 const MAX_HEIGHT = 10;
 
-export default class World extends Async {
+export default class World extends AsyncUtil {
 
   constructor(options) {
     super();
-
     let {width, height} = options;
 
-    this.width = width;
-    this.height = height;
+    this.getItem = Items.getItem;
 
-    this.biomes = [];
-    this.heights = initializeMatrix(width, height, 2);
+    Object.assign(this, options, {
+      biomes: this.initializeMatrix(width, height, 2),
+      heights: this.initializeMatrix(width, height, 2),
+      layers: []
+    });
 
-    this.layers = [];
-
-    this.biomes = initializeMatrix(width, height, 2);
-
-    for (let i = 1; i < 6; i++) {
+    this.repeat(4, (i) => {
       this.spawnBiome(i, Math.round(Math.random() * width), Math.round(Math.random() * height), .2 + Math.random() * .8)
-    }
-    // this.spawnBiome(1, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random()) this.spawnBiome(2, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random()) this.spawnBiome(3,
-    // Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random()) this.spawnBiome(4, Math.round(Math.random() * width), Math.round(Math.random() * height), Math.random())
+    })
 
-    for (let i = 0; i < 15; i++) {
+    this.repeat(15, (i) => {
       let x = Math.round(Math.random() * width),
         y = Math.round(Math.random() * height),
         hh = 3 + Math.round(Math.random() * 4);
@@ -37,11 +34,13 @@ export default class World extends Async {
       this.renderHill(4, x, y, .1);
       this.renderHill(4, x, y, .06);
       this.renderHill(5, x, y, .03);
-    }
+    })
 
-    for (var i = 0; i < MAX_HEIGHT; i++) {
+    this.repeat(MAX_HEIGHT, (i) => {
       this.layers.push(this.buildGround(i));
-    }
+    })
+
+    layoutBuildings(this)
 
     this.done();
   }
@@ -104,45 +103,17 @@ export default class World extends Async {
     return groundLayer;
   }
 
-  buildBlocks() {
-    let blocksLayer = [];
-    for (let h = 0; h < this.height; h++) {
-      let row = [];
-      for (let w = 0; w < this.width; w++) {
-        if (Math.random() < .1) {
-          row.push(Items.getItem('block', {biome: this.biomes[w][h]
-          }, {
-            getTile: (inst) => {
-              return (inst.props.biome * 32 * 3) + 16
-            }
-          }))
-        } else {
-          row.push(undefined)
-        }
-      }
-      blocksLayer.push(row);
-    }
-
-    return blocksLayer;
-  }
-
   renderBiomes(ctx, x, y) {
 
     let scWidth = document.body.clientWidth / TILE_SIZE;
     let scHeight = window.innerHeight / TILE_SIZE;
 
-    for (let h = 0; h < this.height; h++) {
-      for (let w = 0; w < this.width; w++) {
-        let val = this.biomes[h][w];
-        ctx.fillStyle = "rgb(" + (
-        125 + (val * 16)) + "," + (
-        125 - (val * 16)) + "," + 125 + ")";
-        ctx.fillRect(w, h, 1, 1);
-      }
-    }
-
-    //ctx.rect(x, y, scWidth, scHeight); ctx.stroke();
-
+    this.iterateMatrix(this.biomes, (val, w, h) => {
+      ctx.fillStyle = "rgb(" + (
+      125 + (val * 16)) + "," + (
+      125 - (val * 16)) + "," + 125 + ")";
+      ctx.fillRect(w, h, 1, 1);
+    })
   }
 
   render(ctx, x, y) {
@@ -152,6 +123,7 @@ export default class World extends Async {
     let scHeight = window.innerHeight;
 
     ctx.clearRect(0, 0, scWidth, scHeight)
+
     for (let l = 0; l < layers.length - 1; l++) {
       let layer = layers[l];
       for (let i = 0; i < Math.min(scHeight / TILE_SIZE, layer.length); i++) {
@@ -170,8 +142,6 @@ export default class World extends Async {
         }
       }
     }
-
-    //this.renderBiomes(ctx, x, y)
   }
 
 }
