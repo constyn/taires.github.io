@@ -8,6 +8,23 @@ export default class Debugger {
       throw new Error("World parameter must be passed")
     }
 
+    let canvas = document.querySelector('canvas');
+    let ctx = canvas.getContext('2d');
+
+    canvas.addEventListener('click', evt => {
+      let {clientX, clientY} = evt;
+      let x = Math.round((clientX - 30) / TILE_SIZE);
+      let y = Math.round((clientY - 20) / TILE_SIZE);
+
+
+      ctx.beginPath();
+      ctx.rect(x * TILE_SIZE, y * TILE_SIZE, TILE_SIZE, TILE_SIZE);
+      ctx.stroke();
+
+      console.log(`Location: [${x}, ${y}]`);
+      console.log(`Height: ${world.heights[y][x]}`);
+    });
+
     Object.assign(this, {
       enabled: true,
       showHeights: false,
@@ -38,8 +55,8 @@ export default class Debugger {
           }, {
             sx: x,
             sy: y,
-            ex: Math.min(scWidth / TILE_SIZE, layers[0][0].length),
-            ey: Math.min(scHeight / TILE_SIZE, layers[0].length),
+            l: Math.min(scWidth / TILE_SIZE, layers[0][0].length),
+            h: Math.min(scHeight / TILE_SIZE, layers[0].length),
             startFrom0: true
           })
         } else if (this.showTiles) {

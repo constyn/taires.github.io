@@ -124,8 +124,8 @@ function iterateMatrixBound(matrix, fn, opt) {
     startFrom0: false
   }, opt);
 
-  let toX = opt.l || opt.sx + opt.ex;
-  let toY = opt.h || opt.sy + opt.ey;
+  let toX = opt.ex || opt.sx + opt.l;
+  let toY = opt.ey || opt.sy + opt.h;
 
   for (let i = def.sy; i < toY; i++) {
     for (let j = def.sx; j < toX; j++) {
@@ -156,9 +156,9 @@ function iterate3DMatrixBound(matrix, fn, opt) {
     ez: 0
   }, opt);
 
-  let toX = opt.l || opt.sx + opt.ex;
-  let toY = opt.h || opt.sy + opt.ey;
-  let toZ = opt.t || opt.sz + opt.ez;
+  let toX = opt.ex || opt.sx + opt.l;
+  let toY = opt.ey || opt.sy + opt.h;
+  let toZ = opt.ez || opt.sz + opt.t;
 
   for (let l = def.sz; l < toY; l++) {
     for (let i = def.sy; i < toY; i++) {
@@ -842,9 +842,22 @@ let World = class World extends __WEBPACK_IMPORTED_MODULE_0__core_async__["a" /*
       this.layers.push(this.buildGround(i));
     });
 
-    Object(__WEBPACK_IMPORTED_MODULE_4__buildings_village__["a" /* layoutBuildings */])(this);
+    this.repeat(15, i => {
+      Object(__WEBPACK_IMPORTED_MODULE_4__buildings_village__["a" /* layoutBuildings */])(this);
+    });
 
     this.done();
+  }
+
+  addItem(type, x, y, z, opt) {
+    let item = this.getItem(type, opt);
+    if (item) {
+      if (item.props.block) {
+        this.heights[y][x] = z;
+      }
+
+      this.layers[z][y][x] = item;
+    }
   }
 
   renderHill(height, startX, startY, strength) {
@@ -1412,33 +1425,36 @@ function layoutBuildings(world) {
   let item,
       minH = layers.length,
       maxH = 0,
-      sx = random(10, 30, true),
-      sy = random(10, 30, true),
+      sx = random(10, width - 20, true),
+      sy = random(10, height - 20, true),
       ex = sx + random(10, 20, true),
       ey = sy + random(10, 20, true);
 
-  world.iterateMatrix(heights, val => {
+  world.iterateMatrixBound(heights, (val, x, y) => {
     minH = Math.min(minH, val);
-    maxH = Math.max(maxH, val);
-  });
+    maxH = Math.max(maxH, val + 1);
+  }, { sx, sy, ex, ey });
 
-  maxH -= 4;
+  world.range(minH, maxH, i => {
 
-  world.rangeMatrix([[sx, ex], [sy, ey]], (x, y, boundary) => {
-    layers[maxH][y][x] = getItem('wall', {
-      biome: biomes[y][x],
-      tile: world.random(48, 51, true)
+    world.rangeMatrix([[sx, ex], [sy, ey]], (x, y, boundary) => {
+      if (layers[i][y][x] === undefined || i === maxH - 1) {
+        world.addItem('wall', x, y, i, {
+          biome: biomes[y][x],
+          tile: world.random(48, 51, true)
+        });
+      }
     });
   });
 
   world.rangeMatrix([[sx, ex], [sy, ey]], (x, y, boundary) => {
     if (boundary) {
-      layers[maxH + 1][y][x] = getItem('wall', {
+      world.addItem('wall', x, y, y === sy && x > sx && x < ex - 1 ? maxH + 1 : maxH, {
         biome: biomes[y][x],
         tile: y === ey - 1 ? 7 : world.random(0, 1, true)
       });
     } else if (y === ey - 2 || y === sy + 1) {
-      layers[maxH + 1][y][x] = getItem('wall', {
+      world.addItem('wall', x, y, y === sy + 1 ? maxH : maxH + 1, {
         biome: biomes[y][x],
         tile: y === sy + 1 ? 7 : world.random(0, 1, true)
       });
@@ -1465,6 +1481,24 @@ let Debugger = class Debugger {
     if (!world) {
       throw new Error("World parameter must be passed");
     }
+
+    let canvas = document.querySelector('canvas');
+    let ctx = canvas.getContext('2d');
+
+    canvas.addEventListener('click', evt => {
+      let clientX = evt.clientX,
+          clientY = evt.clientY;
+
+      let x = Math.round((clientX - 30) / __WEBPACK_IMPORTED_MODULE_0__defaults_tilesets__["a" /* TILE_SIZE */]);
+      let y = Math.round((clientY - 20) / __WEBPACK_IMPORTED_MODULE_0__defaults_tilesets__["a" /* TILE_SIZE */]);
+
+      ctx.beginPath();
+      ctx.rect(x * __WEBPACK_IMPORTED_MODULE_0__defaults_tilesets__["a" /* TILE_SIZE */], y * __WEBPACK_IMPORTED_MODULE_0__defaults_tilesets__["a" /* TILE_SIZE */], __WEBPACK_IMPORTED_MODULE_0__defaults_tilesets__["a" /* TILE_SIZE */], __WEBPACK_IMPORTED_MODULE_0__defaults_tilesets__["a" /* TILE_SIZE */]);
+      ctx.stroke();
+
+      console.log(`Location: [${x}, ${y}]`);
+      console.log(`Height: ${world.heights[y][x]}`);
+    });
 
     Object.assign(this, {
       enabled: true,
@@ -1505,8 +1539,8 @@ let Debugger = class Debugger {
           }, {
             sx: x,
             sy: y,
-            ex: Math.min(scWidth / __WEBPACK_IMPORTED_MODULE_0__defaults_tilesets__["a" /* TILE_SIZE */], layers[0][0].length),
-            ey: Math.min(scHeight / __WEBPACK_IMPORTED_MODULE_0__defaults_tilesets__["a" /* TILE_SIZE */], layers[0].length),
+            l: Math.min(scWidth / __WEBPACK_IMPORTED_MODULE_0__defaults_tilesets__["a" /* TILE_SIZE */], layers[0][0].length),
+            h: Math.min(scHeight / __WEBPACK_IMPORTED_MODULE_0__defaults_tilesets__["a" /* TILE_SIZE */], layers[0].length),
             startFrom0: true
           });
         } else if (this.showTiles) {

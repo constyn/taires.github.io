@@ -49,8 +49,8 @@ export function iterateMatrixBound(matrix, fn, opt) {
     startFrom0: false
   }, opt)
 
-  let toX = opt.l || opt.sx + opt.ex;
-  let toY = opt.h || opt.sy + opt.ey;
+  let toX = opt.ex || opt.sx + opt.l;
+  let toY = opt.ey || opt.sy + opt.h;
 
   for (let i = def.sy; i < toY; i++) {
     for (let j = def.sx; j < toX; j++) {
@@ -83,9 +83,9 @@ export function iterate3DMatrixBound(matrix, fn, opt) {
     ez: 0
   }, opt)
 
-  let toX = opt.l || opt.sx + opt.ex;
-  let toY = opt.h || opt.sy + opt.ey;
-  let toZ = opt.t || opt.sz + opt.ez;
+  let toX = opt.ex || opt.sx + opt.l;
+  let toY = opt.ey || opt.sy + opt.h;
+  let toZ = opt.ez || opt.sz + opt.t;
 
   for (let l = def.sz; l < toY; l++) {
     for (let i = def.sy; i < toY; i++) {

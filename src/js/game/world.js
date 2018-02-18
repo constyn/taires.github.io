@@ -40,9 +40,22 @@ export default class World extends AsyncUtil {
       this.layers.push(this.buildGround(i));
     })
 
-    layoutBuildings(this)
+    this.repeat(15, (i) => {
+      layoutBuildings(this)
+    })
 
     this.done();
+  }
+
+  addItem(type, x, y, z, opt) {
+    let item = this.getItem(type, opt);
+    if (item) {
+      if (item.props.block) {
+        this.heights[y][x] = z;
+      }
+
+      this.layers[z][y][x] = item;
+    }
   }
 
   renderHill(height, startX, startY, strength) {
@@ -118,7 +131,7 @@ export default class World extends AsyncUtil {
 
   render(ctx, x, y) {
     let {width, height, layers} = this,
-      [scWidth, scHeight ] = this.getRenderBoundaries();
+      [scWidth, scHeight] = this.getRenderBoundaries();
 
     ctx.clearRect(0, 0, scWidth, scHeight)
 
