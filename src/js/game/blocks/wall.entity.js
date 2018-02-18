@@ -7,7 +7,7 @@ export default class WallBlock extends Entity {
     super({
       tileset: 'wall',
       block: true,
-      tile: 1,
+      tile: Math.round(Math.random() * 3),
       ...props
     })
   }

@@ -132,7 +132,7 @@ export function rangeMatrix(ranges, fn) {
 }
 
 export function random(min, max, int) {
-  if (!min) {
+  if (min === undefined) {
     return Math.random();
   } else {
     let res = Math.random() * (max - min) + min;

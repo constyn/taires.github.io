@@ -3,7 +3,7 @@ import Wall from './blocks/wall.entity';
 
 const keys = {
   'ground': [Ground],
-  'block': [Wall]
+  'wall': [Wall]
 }
 
 export default class Items {
