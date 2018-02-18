@@ -117,10 +117,8 @@ export default class World extends AsyncUtil {
   }
 
   render(ctx, x, y) {
-    let {width, height, layers} = this;
-
-    let scWidth = document.body.clientWidth;
-    let scHeight = window.innerHeight;
+    let {width, height, layers} = this,
+      [scWidth, scHeight ] = this.getRenderBoundaries();
 
     ctx.clearRect(0, 0, scWidth, scHeight)
 

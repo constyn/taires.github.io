@@ -45,7 +45,8 @@ export function iterateMatrixBound(matrix, fn, opt) {
     l: 0,
     h: 0,
     ex: 0,
-    ey: 0
+    ey: 0,
+    startFrom0: false
   }, opt)
 
   let toX = opt.l || opt.sx + opt.ex;
@@ -53,7 +54,9 @@ export function iterateMatrixBound(matrix, fn, opt) {
 
   for (let i = def.sy; i < toY; i++) {
     for (let j = def.sx; j < toX; j++) {
-      fn(matrix[i][j], j, i);
+      def.startFrom0
+        ? fn(matrix[i][j], j - def.sx, i - def.sy)
+        : fn(matrix[i][j], j, i);
     }
   }
 }
@@ -115,7 +118,7 @@ export function getNeightbours(matrix, x, y, pushUndefine = false) {
 
 export function range(start, end, fn, boundary) {
   for (var i = start; i < end; i++) {
-    fn(i, i===start || i===end-1)
+    fn(i, i === start || i === end - 1)
   }
 }
 
@@ -138,4 +141,8 @@ export function random(min, max, int) {
     }
     return res;
   }
+}
+
+export function getRenderBoundaries() {
+  return [document.body.clientWidth, window.innerHeight]
 }

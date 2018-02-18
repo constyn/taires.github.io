@@ -1,4 +1,5 @@
 import World from './world';
+import Debugger from '../core/debugger';
 
 const DEFAULTS = {
   width: 200,
@@ -13,11 +14,12 @@ export default class Game {
       props
     }
 
-
     this.world = new World(DEFAULTS);
+    this.debugger = new Debugger(this.world);
 
     let x = 0,
-      y = 0, inc = 10;
+      y = 0,
+      inc = 10;
 
     document.addEventListener('keydown', (e) => {
       switch (e.key) {
@@ -32,6 +34,12 @@ export default class Game {
           break;
         case 'ArrowUp':
           y = Math.max(0, y - inc);
+          break;
+        case 'd':
+          this.debugger.toggle();
+          break;
+        case 'h':
+          this.debugger.toggle('showHeights');
           break;
       }
 
