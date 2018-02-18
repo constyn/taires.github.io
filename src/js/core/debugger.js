@@ -1,4 +1,5 @@
 import {TILE_SIZE} from '../defaults/tilesets';
+import Tilesets from '../render/tilesets';
 
 export default class Debugger {
 
@@ -10,6 +11,7 @@ export default class Debugger {
     Object.assign(this, {
       enabled: true,
       showHeights: false,
+      showTiles: false,
       world
     })
 
@@ -39,6 +41,35 @@ export default class Debugger {
             ex: Math.min(scWidth / TILE_SIZE, layers[0][0].length),
             ey: Math.min(scHeight / TILE_SIZE, layers[0].length),
             startFrom0: true
+          })
+        } else if (this.showTiles) {
+          let nextX = 20,
+            nextY = 20;
+
+          ctx.lineWidth = 1;
+
+          Object.keys(Tilesets.tilesets).forEach(key => {
+            let tileset = Tilesets.tilesets[key],
+              image = tileset.tilesetImage;
+
+            world.repeat(tileset.colLength, (x) => {
+              ctx.fillText(x, nextX + x * TILE_SIZE + 4, nextY - 10);
+            })
+
+            world.repeat(image.height / TILE_SIZE, (y) => {
+              ctx.fillText(y, nextX - TILE_SIZE + 5, nextY + y * TILE_SIZE + TILE_SIZE - 5);
+            })
+
+            ctx.drawImage(image, nextX, nextY);
+            ctx.beginPath();
+            ctx.rect(nextX, nextY, image.width, image.height);
+            ctx.stroke();
+
+            nextX = image.width + 40;
+            if (nextX > scWidth) {
+              nextX = 10;
+              nextY += image.height + 40;
+            }
           })
         }
       }

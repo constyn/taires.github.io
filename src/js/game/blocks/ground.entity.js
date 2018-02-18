@@ -1,6 +1,6 @@
 import Entity from '../entity';
 
-const COLS = 32;
+const COLS = 20;
 const BIOME_MAP = {
   "0": 0,
   "1": COLS * 3,
@@ -84,7 +84,9 @@ export default class GroundBlock extends Entity {
       let shadeTile;
 
       if (topNeigh[1] !== undefined) {
-        if (topNeigh[3] !== undefined) {
+        if (topNeigh[0] === undefined) {
+          shadeTile = this.props._tile + 13;
+        } else if (topNeigh[3] !== undefined) {
           shadeTile = this.props._tile + 17;
         } else {
           shadeTile = this.props._tile + 14;
@@ -97,10 +99,6 @@ export default class GroundBlock extends Entity {
         }
       } else if (topNeigh[1] === undefined && topNeigh[3] !== undefined) {
         shadeTile = this.props._tile + 18;
-      }
-
-      if (shadeTile) {
-        super.render(ctx, x, y, {tile: shadeTile})
       }
 
       let preTile;
@@ -126,20 +124,18 @@ export default class GroundBlock extends Entity {
           preTile = this.props._tile + 8;
         }
       } else if (biomeNeigh[3] !== biome) {
-        preTile = this.props._tile  + 7 + COLS;
+        preTile = this.props._tile + 7 + COLS;
       } else if (biomeNeigh[4] !== biome) {
-        preTile = this.props._tile  + 9 + COLS;
+        preTile = this.props._tile + 9 + COLS;
       }
 
       if (preTile) {
         super.render(ctx, x, y, {tile: preTile})
       }
-      //
-      // if (biomeNeigh[1] !== undefined && biomeNeigh[1] !== biome) {
-      //   super.render(ctx, x, y, {
-      //     tile: BIOME_MAP[biomeNeigh[1]] + 8 + COLS * 2
-      //   })
-      // }
+
+      if (shadeTile) {
+        super.render(ctx, x, y, {tile: shadeTile})
+      }
 
     }
   }

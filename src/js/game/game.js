@@ -41,6 +41,9 @@ export default class Game {
         case 'h':
           this.debugger.toggle('showHeights');
           break;
+        case 't':
+          this.debugger.toggle('showTiles');
+          break;
       }
 
       this.world.render(ctx, x, y);

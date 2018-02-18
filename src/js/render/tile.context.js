@@ -7,28 +7,29 @@ export default class TileContext extends AsyncOperation {
   constructor(options) {
     super();
     this.options = options;
-    const {remote, tileset, cols, isGround} = options;
+    const {remote, tileset, isGround} = options;
+    let cols;
 
     if (remote) {
       loader.load(remote).then(data => {
         this.processImage(data.image, data.columns, isGround);
       })
     } else if (tileset) {
-      this.processImage(tileset, cols, isGround)
+      this.processImage(tileset, isGround)
     } else {
-      throw new Error("Please provide (remote || tileset, colLength) as options for TileContext");
+      throw new Error("Please provide (remote || tileset) as options for TileContext");
     }
 
   }
 
-  processImage(tileset, colLength, isGround) {
+  processImage(tileset, isGround) {
     this.tilesetImage = new Image();
     var m_canvas = document.createElement('canvas');
 
     this.tilesetImage.src = tileset;
     this.tilesetImage.onload = () => {
       this.tilesetImage.onload = undefined;
-
+      this.colLength = this.tilesetImage.width / TILE_SIZE;
       m_canvas.width = this.tilesetImage.width;
       m_canvas.height = this.tilesetImage.height;
       var m_context = m_canvas.getContext("2d");
@@ -43,7 +44,7 @@ export default class TileContext extends AsyncOperation {
       //document.body.appendChild(this.tilesetImage);
       this.done();
     }
-    this.colLength = colLength;
+
   }
 
   buildBlockTexture(ctx, startX, startY) {
