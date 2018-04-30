@@ -14,6 +14,7 @@ export default class World extends AsyncUtil {
     let {width, height} = options;
 
     this.getItem = Items.getItem;
+    this.tickers = [];
 
     Object.assign(this, options, {
       biomes: this.initializeMatrix(width, height, 2),
@@ -46,14 +47,38 @@ export default class World extends AsyncUtil {
 
     this.addItem('creatures', 5, 5, this.heights[5][5]);
 
+    for (let i = 0; i < 100; i++) {
+      let [px, py] = [
+        10 + Math.round(Math.random() * (width - 20)),
+        10 + Math.round(Math.random() * (height - 20))
+      ]
+      this.addItem('creatures', px, py, this.heights[px][py]);
+    }
+
     this.done();
+
+    setInterval(() => {
+      this.tickers.forEach(ticker => {
+        ticker.doTick(this);
+      });
+    }, 10)
   }
 
   addItem(type, x, y, z, opt) {
-    let item = this.getItem(type, {...opt, x, y, z});
+    let item = this.getItem(type, {
+      ...opt,
+      x,
+      y,
+      z,
+      world: this
+    });
     if (item) {
       if (item.props.block) {
         this.heights[y][x] = z;
+      }
+
+      if (item.doTick) {
+        this.tickers.push(item);
       }
 
       this.layers[z][y][x] = item;
@@ -144,7 +169,7 @@ export default class World extends AsyncUtil {
         if (row) {
           for (let j = 0; j < Math.min(scWidth / TILE_SIZE, row.length); j++) {
             let obj = row[j + x];
-            if (obj) {
+            if (obj && l > this.heights[i + y][j + x] - 2) {
               obj.render(ctx, j, i, {
                 neigh: getNeightbours(layer, j + x, i + y, true),
                 topNeigh: getNeightbours(layers[l + 1], j + x, i + y, true),

@@ -46,8 +46,12 @@ export default class Game {
           break;
       }
 
-      this.world.render(ctx, x, y);
+
     })
+
+    setInterval(()=> {
+      this.world.render(ctx, x, y);
+    }, 10);
 
   }
 

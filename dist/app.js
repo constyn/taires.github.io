@@ -796,9 +796,11 @@ let Game = class Game {
           this.debugger.toggle('showTiles');
           break;
       }
-
-      this.world.render(ctx, x, y);
     });
+
+    setInterval(() => {
+      this.world.render(ctx, x, y);
+    }, 10);
   }
 
   render(ctx) {
@@ -841,6 +843,7 @@ let World = class World extends __WEBPACK_IMPORTED_MODULE_0__core_async__["a" /*
 
 
     this.getItem = __WEBPACK_IMPORTED_MODULE_1__items__["a" /* default */].getItem;
+    this.tickers = [];
 
     Object.assign(this, options, {
       biomes: this.initializeMatrix(width, height, 2),
@@ -873,14 +876,36 @@ let World = class World extends __WEBPACK_IMPORTED_MODULE_0__core_async__["a" /*
 
     this.addItem('creatures', 5, 5, this.heights[5][5]);
 
+    for (let i = 0; i < 100; i++) {
+      let px = 10 + Math.round(Math.random() * (width - 20)),
+          py = 10 + Math.round(Math.random() * (height - 20));
+
+      this.addItem('creatures', px, py, this.heights[px][py]);
+    }
+
     this.done();
+
+    setInterval(() => {
+      this.tickers.forEach(ticker => {
+        ticker.doTick(this);
+      });
+    }, 10);
   }
 
   addItem(type, x, y, z, opt) {
-    let item = this.getItem(type, _extends({}, opt, { x, y, z }));
+    let item = this.getItem(type, _extends({}, opt, {
+      x,
+      y,
+      z,
+      world: this
+    }));
     if (item) {
       if (item.props.block) {
         this.heights[y][x] = z;
+      }
+
+      if (item.doTick) {
+        this.tickers.push(item);
       }
 
       this.layers[z][y][x] = item;
@@ -974,7 +999,7 @@ let World = class World extends __WEBPACK_IMPORTED_MODULE_0__core_async__["a" /*
         if (row) {
           for (let j = 0; j < Math.min(scWidth / __WEBPACK_IMPORTED_MODULE_2__defaults_tilesets__["a" /* TILE_SIZE */], row.length); j++) {
             let obj = row[j + x];
-            if (obj) {
+            if (obj && l > this.heights[i + y][j + x] - 2) {
               obj.render(ctx, j, i, {
                 neigh: Object(__WEBPACK_IMPORTED_MODULE_3__core_utils__["getNeightbours"])(layer, j + x, i + y, true),
                 topNeigh: Object(__WEBPACK_IMPORTED_MODULE_3__core_utils__["getNeightbours"])(layers[l + 1], j + x, i + y, true),
@@ -1469,6 +1494,20 @@ let CreatureEntity = class CreatureEntity extends __WEBPACK_IMPORTED_MODULE_0__e
     this.currentTick = 0;
   }
 
+  move(dx, dy, dz) {
+    var _props = this.props;
+    let x = _props.x,
+        y = _props.y,
+        z = _props.z,
+        world = _props.world;
+
+    world.layers[z][y][x] = undefined;
+    this.props.x += dx;
+    this.props.y += dy;
+    this.props.z += dz;
+    world.layers[this.props.z][this.props.y][this.props.x] = this;
+  }
+
   doTick() {
     if (++this.currentTick > this.props.tickInterval) {
       this.tick();
@@ -1476,7 +1515,9 @@ let CreatureEntity = class CreatureEntity extends __WEBPACK_IMPORTED_MODULE_0__e
     }
   }
 
-  tick(world) {}
+  tick() {
+    this.move(Math.round(-1 + Math.random() * 2), Math.round(-1 + Math.random() * 2), 0);
+  }
 
 };
 
